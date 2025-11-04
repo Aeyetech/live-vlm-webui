@@ -56,7 +56,7 @@ Stream your webcam to any VLM and get live AI-powered analysis - perfect for tes
 
 ## Screenshot
 
-![](https://github.com/user-attachments/assets/0fa02fc5-c130-43e8-b42d-acd01853270c)
+![](./docs/images/chrome_app_running.png)
 
 ## Architecture
 
@@ -161,15 +161,15 @@ https://<IP_ADDRESS>:8080
 
 Click "**Advanced**" button.
 
-![](https://github.com/user-attachments/assets/2d93e90b-708b-4834-baee-f916037b2ea1")
+![](./docs/images/chrome_advanced.png)
 
 Then click on "**Proceeed to <IP_ADDRESS> (unsafe)**".
 
-![](https://github.com/user-attachments/assets/455bd71f-2d87-4aa2-9da7-b75c84e8c262")
+![](./docs/images/chrome_proceed.png)
 
-5. **Click "Start Analysis"** and allow camera access
+5. **Click "OPEN CAMERA AND START VLM ANALYSIS"** and allow camera access
 
-![](https://github.com/user-attachments/assets/c2a8c58b-9271-479e-88a1-8369dbcc3178)
+![](./docs/images/chrome_webcam_access.png)
 
 ### Using the Web Interface
 
