@@ -61,11 +61,13 @@ class VideoProcessorTrack(VideoStreamTrack):
 
             # Get current response (may be old if VLM is still processing)
             response, is_processing = self.vlm_service.get_current_response()
-
+            
+            # Get metrics
+            metrics = self.vlm_service.get_metrics()
+            
             # Send text update via callback (for WebSocket)
             if self.text_callback:
-                status = "Processing..." if is_processing else "Ready"
-                self.text_callback(response, status)
+                self.text_callback(response, metrics)
 
             # Return clean video frame (no overlay)
             new_frame = VideoFrame.from_ndarray(img, format="bgr24")

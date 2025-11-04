@@ -6,6 +6,7 @@ Handles async image analysis using any OpenAI-compatible VLM API
 import asyncio
 import base64
 import io
+import time
 from openai import AsyncOpenAI
 from PIL import Image
 from typing import Optional
@@ -43,6 +44,11 @@ class VLMService:
         self.current_response = "Initializing..."
         self.is_processing = False
         self._processing_lock = asyncio.Lock()
+        
+        # Metrics tracking
+        self.last_inference_time = 0.0  # seconds
+        self.total_inferences = 0
+        self.total_inference_time = 0.0
 
     async def analyze_image(self, image: Image.Image, prompt: Optional[str] = None) -> str:
         """
@@ -59,6 +65,8 @@ class VLMService:
             prompt = self.prompt
 
         try:
+            start_time = time.perf_counter()
+            
             # Convert PIL Image to base64
             img_byte_arr = io.BytesIO()
             image.save(img_byte_arr, format='JPEG')
@@ -92,8 +100,17 @@ class VLMService:
                 temperature=0.7
             )
 
+            # Calculate latency
+            end_time = time.perf_counter()
+            inference_time = end_time - start_time
+            
+            # Update metrics
+            self.last_inference_time = inference_time
+            self.total_inferences += 1
+            self.total_inference_time += inference_time
+
             result = response.choices[0].message.content.strip()
-            logger.info(f"VLM response: {result}")
+            logger.info(f"VLM response: {result} (latency: {inference_time*1000:.0f}ms)")
             return result
 
         except Exception as e:
@@ -130,6 +147,23 @@ class VLMService:
             Tuple of (response, is_processing)
         """
         return self.current_response, self.is_processing
+    
+    def get_metrics(self) -> dict:
+        """
+        Get current performance metrics
+        
+        Returns:
+            Dict with latency and throughput metrics
+        """
+        avg_latency = (self.total_inference_time / self.total_inferences 
+                      if self.total_inferences > 0 else 0.0)
+        
+        return {
+            "last_latency_ms": self.last_inference_time * 1000,
+            "avg_latency_ms": avg_latency * 1000,
+            "total_inferences": self.total_inferences,
+            "is_processing": self.is_processing
+        }
 
     def update_prompt(self, new_prompt: str) -> None:
         """

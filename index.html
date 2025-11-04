@@ -67,33 +67,50 @@
         }
 
         .text-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
+            background: rgba(0, 0, 0, 0.9);
+            color: #4CAF50;
             padding: 15px 20px;
             font-size: 16px;
-            line-height: 1.5;
-            max-height: 30%;
-            overflow-y: auto;
-            backdrop-filter: blur(5px);
-            transition: background 0.3s ease;
+            line-height: 1.4;
+            border-radius: 0 0 10px 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            transition: all 3s ease-out;
         }
 
-        .text-overlay.processing {
-            background: rgba(102, 126, 234, 0.75);
+        .text-overlay.fade {
+            color: #888;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .text-overlay .status {
-            display: inline-block;
+        .metrics {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #4CAF50;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.2);
-            margin-left: 10px;
-            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .metrics div {
+            margin: 2px 0;
+        }
+
+        .metrics .label {
+            color: #aaa;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .metrics .value {
+            color: #4CAF50;
+            font-weight: bold;
         }
 
         .prompt-editor {
@@ -300,10 +317,15 @@
         <div class="video-container">
             <div class="video-wrapper">
                 <video id="videoElement" autoplay playsinline muted></video>
-                <div id="textOverlay" class="text-overlay">
-                    <span id="vlmText">Waiting for connection...</span>
-                    <span id="vlmStatus" class="status">Initializing</span>
+                <div id="metrics" class="metrics" style="display: none;">
+                    <div><span class="label">Latency:</span> <span class="value" id="latencyValue">--</span> ms</div>
+                    <div><span class="label">Avg:</span> <span class="value" id="avgLatencyValue">--</span> ms</div>
+                    <div><span class="label">Count:</span> <span class="value" id="countValue">--</span></div>
                 </div>
+            </div>
+
+            <div id="textOverlay" class="text-overlay">
+                <span id="vlmText">Waiting for connection...</span>
             </div>
 
             <div class="controls">
@@ -335,7 +357,10 @@
         const statusElement = document.getElementById('status');
         const textOverlay = document.getElementById('textOverlay');
         const vlmText = document.getElementById('vlmText');
-        const vlmStatus = document.getElementById('vlmStatus');
+        const metricsDiv = document.getElementById('metrics');
+        const latencyValue = document.getElementById('latencyValue');
+        const avgLatencyValue = document.getElementById('avgLatencyValue');
+        const countValue = document.getElementById('countValue');
         const promptPreset = document.getElementById('promptPreset');
         const promptText = document.getElementById('promptText');
         const updatePromptBtn = document.getElementById('updatePromptBtn');
@@ -343,6 +368,8 @@
         let peerConnection = null;
         let localStream = null;
         let websocket = null;
+        let fadeTimeout = null;
+        let lastText = '';
 
         // Update status display
         function updateStatus(message, state) {
@@ -397,19 +424,35 @@
                 const data = JSON.parse(event.data);
 
                 if (data.type === 'vlm_response') {
-                    // Update text overlay
-                    vlmText.textContent = data.text;
-                    vlmStatus.textContent = data.status;
+                    // Check if text changed (new generation)
+                    if (data.text !== lastText && lastText !== '') {
+                        // Remove fade to show fresh text
+                        textOverlay.classList.remove('fade');
 
-                    // Update overlay styling based on status
-                    if (data.status === 'Processing...') {
-                        textOverlay.classList.add('processing');
-                    } else {
-                        textOverlay.classList.remove('processing');
+                        // Clear existing fade timeout
+                        if (fadeTimeout) {
+                            clearTimeout(fadeTimeout);
+                        }
+
+                        // Start fade after 2 seconds
+                        fadeTimeout = setTimeout(() => {
+                            textOverlay.classList.add('fade');
+                        }, 2000);
+                    }
+
+                    // Update text
+                    vlmText.textContent = data.text;
+                    lastText = data.text;
+
+                    // Update metrics
+                    if (data.metrics) {
+                        metricsDiv.style.display = 'block';
+                        latencyValue.textContent = Math.round(data.metrics.last_latency_ms);
+                        avgLatencyValue.textContent = Math.round(data.metrics.avg_latency_ms);
+                        countValue.textContent = data.metrics.total_inferences;
                     }
                 } else if (data.type === 'status') {
                     vlmText.textContent = data.text;
-                    vlmStatus.textContent = data.status;
                 }
             };
 
@@ -536,6 +579,12 @@
             // Disconnect WebSocket
             disconnectWebSocket();
 
+            // Clear fade timeout
+            if (fadeTimeout) {
+                clearTimeout(fadeTimeout);
+                fadeTimeout = null;
+            }
+
             // Stop local stream
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
@@ -558,8 +607,11 @@
 
             // Reset text overlay
             vlmText.textContent = 'Waiting for connection...';
-            vlmStatus.textContent = 'Initializing';
-            textOverlay.classList.remove('processing');
+            textOverlay.classList.remove('fade');
+            lastText = '';
+
+            // Hide metrics
+            metricsDiv.style.display = 'none';
         }
 
         // Event listeners

@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import os
+import signal
 from aiohttp import web
 from aiortc import RTCPeerConnection, RTCSessionDescription, MediaStreamTrack
 from aiortc.contrib.media import MediaRelay
@@ -79,17 +80,17 @@ async def websocket_handler(request):
     return ws
 
 
-def broadcast_text_update(text: str, status: str):
-    """Broadcast text update to all connected WebSocket clients"""
+def broadcast_text_update(text: str, metrics: dict):
+    """Broadcast text update and metrics to all connected WebSocket clients"""
     if not websockets:
         return
-
+    
     message = json.dumps({
         "type": "vlm_response",
         "text": text,
-        "status": status
+        "metrics": metrics
     })
-
+    
     # Send to all connected clients
     dead_websockets = set()
     for ws in websockets:
@@ -99,7 +100,7 @@ def broadcast_text_update(text: str, status: str):
         except Exception as e:
             logger.error(f"Error sending to websocket: {e}")
             dead_websockets.add(ws)
-
+    
     # Clean up dead connections
     websockets.difference_update(dead_websockets)
 
@@ -160,10 +161,19 @@ async def offer(request):
 
 async def on_shutdown(app):
     """Cleanup on server shutdown"""
+    logger.info("Shutting down server...")
+    
+    # Close all websockets
+    for ws in list(websockets):
+        await ws.close()
+    websockets.clear()
+    
     # Close all peer connections
     coros = [pc.close() for pc in pcs]
     await asyncio.gather(*coros)
     pcs.clear()
+    
+    logger.info("Cleanup complete")
 
 
 def main():
@@ -266,8 +276,22 @@ def main():
 
     logger.info("=" * 70)
     logger.info("")
+    logger.info("Press Ctrl+C to stop")
 
-    web.run_app(app, host=args.host, port=args.port, ssl_context=ssl_context)
+    # Setup signal handlers for graceful shutdown
+    def signal_handler(signum, frame):
+        logger.info("\nReceived signal to terminate. Shutting down gracefully...")
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    try:
+        web.run_app(app, host=args.host, port=args.port, ssl_context=ssl_context)
+    except KeyboardInterrupt:
+        logger.info("Server stopped by user")
+    except Exception as e:
+        logger.error(f"Server error: {e}")
 
 
 if __name__ == "__main__":
