@@ -570,7 +570,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
-    parser.add_argument("--port", type=int, default=8080, help="Port to bind to (default: 8080)")
+    parser.add_argument("--port", type=int, default=8090, help="Port to bind to (default: 8090)")
     parser.add_argument("--auto-port", action="store_true", help="Automatically find available port if default is taken")
     parser.add_argument("--model", help="VLM model name (optional, will auto-detect if not specified)")
     parser.add_argument("--api-base", help="VLM API base URL (optional, will auto-detect or use NVIDIA NGC)")

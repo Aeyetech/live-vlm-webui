@@ -1,0 +1,52 @@
+FROM python:3.10-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libavformat-dev \
+    libavcodec-dev \
+    libavdevice-dev \
+    libavutil-dev \
+    libswscale-dev \
+    libswresample-dev \
+    libavfilter-dev \
+    libopus-dev \
+    libvpx-dev \
+    pkg-config \
+    libsrtp2-dev \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY server.py .
+COPY vlm_service.py .
+COPY video_processor.py .
+COPY gpu_monitor.py .
+COPY index.html .
+COPY generate_cert.sh .
+
+# Make generate_cert.sh executable
+RUN chmod +x generate_cert.sh
+
+# Generate self-signed SSL certificates (can be overridden by volume mount)
+RUN ./generate_cert.sh
+
+# Expose port
+EXPOSE 8090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('https://localhost:8090', timeout=5, context=__import__('ssl')._create_unverified_context())" || exit 1
+
+# Run the server
+CMD ["python", "server.py", "--host", "0.0.0.0", "--port", "8090", "--ssl-cert", "cert.pem", "--ssl-key", "key.pem"]
+

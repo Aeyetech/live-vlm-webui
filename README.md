@@ -12,6 +12,10 @@ Stream your webcam to any VLM and get live AI-powered analysis - perfect for tes
 - 🖥️ **Desktop/Workstation** (Linux, potentially Mac)
 - ☁️ **Cloud APIs** (OpenAI, Anthropic, etc.)
 
+## Screenshot
+
+![](./docs/images/chrome_app_running.png)
+
 ## Features
 
 ### Core Functionality
@@ -54,10 +58,6 @@ Stream your webcam to any VLM and get live AI-powered analysis - perfect for tes
 - [ ] Export results (JSON, CSV)
 - [ ] Mobile app support
 - [ ] **Hardware-accelerated video processing on Jetson** - Use NVENC/NVDEC for color space conversion instead of CPU-based swscaler (current implementation uses software conversion which is not optimal for Jetson platforms)
-
-## Screenshot
-
-![](./docs/images/chrome_app_running.png)
 
 ## Architecture
 
@@ -259,6 +259,111 @@ The WebUI will auto-detect NVIDIA API Catalog and show/hide the API Key field ac
 - API key format: `nvapi-` followed by ~60 alphanumeric characters
 - Keep your API key secure - don't commit to git!
 
+## Docker Deployment
+
+### Option 1: Docker Compose (Recommended - Full Stack)
+
+Run the entire stack (live-vlm-webui + Ollama) with one command:
+
+```bash
+# Start the services
+docker-compose up -d
+
+# Pull a vision model in Ollama
+docker exec -it ollama ollama pull llama3.2-vision:11b
+
+# View logs
+docker-compose logs -f live-vlm-webui
+
+# Stop the services
+docker-compose down
+```
+
+**For NVIDIA GPU support**, uncomment the GPU section in `docker-compose.yml`:
+```yaml
+deploy:
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: 1
+          capabilities: [gpu]
+```
+
+**Access the UI:**
+- Open `https://localhost:8090` in your browser
+- Accept the self-signed certificate warning
+
+### Option 2: Standalone Docker Container
+
+If you already have a VLM backend running (Ollama, vLLM, etc.):
+
+```bash
+# Build the image
+docker build -t live-vlm-webui .
+
+# Run the container
+docker run -d \
+  --name live-vlm-webui \
+  -p 8090:8090 \
+  --network host \
+  live-vlm-webui
+
+# Or with custom VLM endpoint
+docker run -d \
+  --name live-vlm-webui \
+  -p 8090:8090 \
+  -e VLM_API_BASE=http://your-vlm-server:8000/v1 \
+  -e VLM_MODEL=llama-3.2-11b-vision-instruct \
+  live-vlm-webui
+```
+
+### Option 3: Pre-built Image from GitHub Container Registry
+
+**Coming soon** - we'll publish pre-built images for quick deployment:
+
+```bash
+# Pull and run (when available)
+docker run -d \
+  --name live-vlm-webui \
+  -p 8090:8090 \
+  ghcr.io/nvidia-ai-iot/live-vlm-webui:latest
+```
+
+### Custom SSL Certificates (Production)
+
+For production deployment with your own SSL certificates:
+
+```bash
+# Generate your certificates (or use Let's Encrypt)
+# Then mount them into the container:
+docker run -d \
+  --name live-vlm-webui \
+  -p 8090:8090 \
+  -v /path/to/your/cert.pem:/app/cert.pem:ro \
+  -v /path/to/your/key.pem:/app/key.pem:ro \
+  live-vlm-webui
+```
+
+Or using docker-compose (uncomment volume mounts in `docker-compose.yml`):
+```yaml
+volumes:
+  - ./your-cert.pem:/app/cert.pem:ro
+  - ./your-key.pem:/app/key.pem:ro
+```
+
+### Environment Variables
+
+Configure the application using environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VLM_API_BASE` | Auto-detected | VLM API endpoint URL |
+| `VLM_MODEL` | Auto-detected | Model name to use |
+| `VLM_PROMPT` | "Describe..." | Default prompt |
+| `VLM_API_KEY` | - | API key (for cloud services) |
+| `PORT` | 8090 | Server port |
+
 ## Usage
 
 ### Quick Start
@@ -274,7 +379,7 @@ This will automatically start the server with SSL enabled using Ollama's `llama3
 
 3. **Open your browser** and navigate to:
 ```
-https://<IP_ADDRESS>:8080
+https://<IP_ADDRESS>:8090
 ```
 
 4. **Accept the security warning** (click "Advanced" → "Proceed")
@@ -415,7 +520,7 @@ python server.py --help
 
 **Optional**:
 - `--host HOST` - Host to bind to (default: `0.0.0.0`)
-- `--port PORT` - Port to bind to (default: `8080`)
+- `--port PORT` - Port to bind to (default: `8090`)
 - `--api-base URL` - VLM API base URL (default: `http://localhost:8000/v1`)
 - `--api-key KEY` - API key, use `EMPTY` for local servers (default: `EMPTY`)
 - `--prompt TEXT` - Custom prompt for VLM (default: scene description)

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Live VLM WebUI
+  live-vlm-webui:
+    build: .
+    container_name: live-vlm-webui
+    ports:
+      - "8090:8090"
+    volumes:
+      # Optional: Mount custom SSL certificates
+      # - ./cert.pem:/app/cert.pem:ro
+      # - ./key.pem:/app/key.pem:ro
+
+      # Optional: Mount for development (hot reload)
+      # - ./server.py:/app/server.py:ro
+      # - ./vlm_service.py:/app/vlm_service.py:ro
+      # - ./video_processor.py:/app/video_processor.py:ro
+      # - ./gpu_monitor.py:/app/gpu_monitor.py:ro
+      # - ./index.html:/app/index.html:ro
+    environment:
+      # Auto-detection will find local services, or you can override:
+      # - VLM_API_BASE=http://ollama:11434/v1
+      # - VLM_MODEL=llama3.2-vision:11b
+      # - VLM_PROMPT=Describe what you see in this image in detail.
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    networks:
+      - vlm-network
+
+  # Ollama (optional - comment out if using external VLM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - vlm-network
+    # Uncomment for GPU support (NVIDIA)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  ollama-data:
+    driver: local
+
+networks:
+  vlm-network:
+    driver: bridge
+

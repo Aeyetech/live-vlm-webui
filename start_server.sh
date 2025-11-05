@@ -50,6 +50,6 @@ python server.py \
   --ssl-cert cert.pem \
   --ssl-key key.pem \
   --host 0.0.0.0 \
-  --port 8080 \
+  --port 8090 \
   "$@"
 
