@@ -103,7 +103,7 @@ async def detect_local_service_and_model():
         ("http://localhost:8000/v1", "vLLM"),
         ("http://localhost:30000/v1", "SGLang"),
     ]
-    
+
     for api_base, service_name in services:
         try:
             # Try to connect to the service
@@ -121,7 +121,7 @@ async def detect_local_service_and_model():
                                     logger.info(f"✅ Auto-detected {service_name} at {api_base}")
                                     logger.info(f"   Selected model: {model_id}")
                                     return (api_base, model_id)
-                            
+
                             # If no vision model found, use the first one
                             model_id = models[0].get('id', '')
                             logger.info(f"✅ Auto-detected {service_name} at {api_base}")
@@ -130,7 +130,7 @@ async def detect_local_service_and_model():
         except Exception as e:
             logger.debug(f"Service {service_name} not available at {api_base}: {e}")
             continue
-    
+
     return (None, None)
 
 
@@ -259,12 +259,21 @@ async def websocket_handler(request):
     logger.info(f"WebSocket client connected. Total clients: {len(websockets)}")
 
     try:
-        # Send initial message
+        # Send initial message with current server configuration
         await ws.send_json({
             "type": "status",
             "text": "Connected to server",
             "status": "Ready"
         })
+        
+        # Send current server configuration
+        if vlm_service:
+            await ws.send_json({
+                "type": "server_config",
+                "model": vlm_service.model,
+                "api_base": vlm_service.api_base,
+                "prompt": vlm_service.prompt
+            })
 
         # Keep connection alive and handle incoming messages
         async for msg in ws:
@@ -553,11 +562,11 @@ def main():
     api_base = args.api_base
     model = args.model
     api_key = args.api_key
-    
+
     if not model or not api_base:
         logger.info("No model/API specified, auto-detecting local services...")
         detected_api_base, detected_model = asyncio.run(detect_local_service_and_model())
-        
+
         if detected_api_base and detected_model:
             if not api_base:
                 api_base = detected_api_base
@@ -585,7 +594,7 @@ def main():
         api_key=api_key,
         prompt=args.prompt
     )
-    
+
     # Log initialization with better formatting
     service_name = "Local" if "localhost" in api_base or "127.0.0.1" in api_base else "Cloud"
     logger.info(f"Initialized VLM service:")

@@ -85,7 +85,15 @@ git clone https://github.com/nvidia-ai-iot/live-vlm-webui.git
 cd live-vlm-webui
 ```
 
-2. **Create a conda environment** (recommended):
+2. **Create a virtual environment**:
+
+**Option A: venv (recommended for Jetson/lightweight systems):**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Option B: conda (recommended for desktop/workstation):**
 ```bash
 conda create -n live-vlm-webui python=3.10 -y
 conda activate live-vlm-webui
@@ -104,6 +112,27 @@ pip install -r requirements.txt
 This will create `cert.pem` and `key.pem` in the project directory. These are self-signed certificates for local development.
 
 **Note:** Modern browsers require HTTPS to access webcam/microphone. The self-signed certificate will trigger a security warning - you'll need to click "Advanced" → "Proceed" to accept it.
+
+### Platform-Specific Notes
+
+**Jetson (ARM64):**
+- Use `venv` instead of conda (lighter footprint)
+- Recommended for Jetson Orin, AGX Xavier, Nano
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Desktop/Workstation (x86_64):**
+- Either `venv` or `conda` works well
+- `conda` better for data science workflows
+- `venv` faster and more lightweight
+
+**Why `.venv` (with dot)?**
+- Modern Python standard (PEP 405)
+- Auto-detected by VS Code, PyCharm
+- Keeps directory clean (hidden by default)
+- Already in `.gitignore`
 
 5. **Set up your VLM backend** (choose one):
 

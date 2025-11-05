@@ -1357,11 +1357,21 @@
 
         // Update GPU Stats
         function updateGPUStats(stats) {
-            // Update system info header (e.g., "hostname (Intel Core i9-13900K) with NVIDIA RTX 6000 Ada")
+            // Update system info header
             const hostname = stats.hostname || 'System';
             const cpuModel = stats.cpu_model || 'Unknown CPU';
             const gpuName = stats.gpu_name || 'Unknown GPU';
-            document.getElementById('systemInfoHeader').textContent = `${hostname} (${cpuModel}) with ${gpuName}`;
+            const boardName = stats.board_name;  // e.g., "Jetson AGX Thor Developer Kit"
+            
+            // Format header based on whether we have a board name (Jetson) or not (PC)
+            const systemInfoElem = document.getElementById('systemInfoHeader');
+            if (boardName) {
+                // Jetson: Show board name prominently
+                systemInfoElem.innerHTML = `<b>${boardName}</b> (${hostname}) with ${gpuName} GPU`;
+            } else {
+                // PC: Show hostname with CPU and GPU
+                systemInfoElem.textContent = `${hostname} (${cpuModel}) with ${gpuName}`;
+            }
 
             // GPU (Green)
             const gpuPercent = stats.gpu_percent || 0;
@@ -1461,6 +1471,20 @@
                     updateGPUStats(data.stats);
                 } else if (data.type === 'status') {
                     resultText.textContent = data.text;
+                } else if (data.type === 'server_config') {
+                    // Server sent its current configuration (model, api_base, prompt)
+                    if (data.model) {
+                        document.getElementById('modelName').textContent = data.model;
+                        // Also update the model select if it matches
+                        if (modelSelect.querySelector(`option[value="${data.model}"]`)) {
+                            modelSelect.value = data.model;
+                        }
+                    }
+                    if (data.api_base) {
+                        apiBaseUrl.value = data.api_base;
+                        checkApiKeyRequirement(data.api_base);
+                        updateSystemStatsVisibility(data.api_base);
+                    }
                 }
             };
 
