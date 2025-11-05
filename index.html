@@ -1933,9 +1933,16 @@
                     ram: document.getElementById('ramSparkline')
                 };
 
+                // Set canvas dimensions (use offsetWidth with fallback to parent width)
                 Object.values(canvases).forEach(canvas => {
-                    canvas.width = canvas.offsetWidth;
-                    canvas.height = canvas.offsetHeight;
+                    const width = canvas.offsetWidth || canvas.parentElement.offsetWidth || 300;
+                    const height = canvas.offsetHeight || 40;
+                    
+                    // Only update if dimensions changed (avoid unnecessary canvas clears)
+                    if (canvas.width !== width || canvas.height !== height) {
+                        canvas.width = width;
+                        canvas.height = height;
+                    }
                 });
 
                 drawSparkline(canvases.gpu, stats.history.gpu_util, '#4CAF50');  // Green
