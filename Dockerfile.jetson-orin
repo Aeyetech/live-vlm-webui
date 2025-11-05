@@ -1,6 +1,5 @@
 # Dockerfile for NVIDIA Jetson Orin (AGX Orin, Orin Nano, Orin NX)
 # Based on L4T r36.2.0 (JetPack 6.0)
-# For Thor, use Dockerfile.jetson-thor instead
 
 FROM nvcr.io/nvidia/l4t-base:r36.2.0
 

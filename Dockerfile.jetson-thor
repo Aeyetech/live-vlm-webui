@@ -1,7 +1,10 @@
-# Dockerfile for NVIDIA Jetson Orin (AGX Orin, Orin Nano, Orin NX)
-# Based on L4T r36.2.0 (JetPack 6.0)
-# For Thor, use Dockerfile.jetson-thor instead
+# Dockerfile for NVIDIA Jetson Thor (AGX Thor Developer Kit)
+# Based on L4T r38.x (JetPack 7.x)
+# NOTE: L4T r38.x base images are not yet available on NGC as of Nov 2025
+# This Dockerfile will need to be updated when official images are released
 
+# TODO: Update base image when L4T r38.x is available
+# Expected: FROM nvcr.io/nvidia/l4t-base:r38.x.x
 FROM nvcr.io/nvidia/l4t-base:r36.2.0
 
 # Install Python and system dependencies
@@ -22,6 +25,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     libsrtp2-dev \
     openssl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Make python3 the default python
@@ -37,10 +41,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install jetson-stats for GPU monitoring
-# Note: jetson-stats requires access to system hardware interfaces
-# and may need additional permissions to work fully in Docker
-RUN pip install --no-cache-dir jetson-stats
+# Install jetson-stats from GitHub (latest version for Thor support)
+# PyPI version may not have full Thor support yet
+RUN pip install --no-cache-dir git+https://github.com/rbonghi/jetson_stats.git
 
 # Copy application files
 COPY server.py .

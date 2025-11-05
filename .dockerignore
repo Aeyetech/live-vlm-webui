@@ -45,6 +45,8 @@ ROADMAP.md
 # Docker
 Dockerfile
 Dockerfile.jetson
+Dockerfile.jetson-orin
+Dockerfile.jetson-thor
 docker-compose.yml
 docker-compose.override.yml
 .dockerignore

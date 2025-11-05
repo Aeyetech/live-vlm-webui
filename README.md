@@ -474,17 +474,30 @@ We provide **platform-specific Dockerfiles** for optimal compatibility:
 docker build -t live-vlm-webui:x86 .
 ```
 
-#### `Dockerfile.jetson` - For NVIDIA Jetson (Orin, Thor)
-**Base Image:** `nvcr.io/nvidia/l4t-base:r36.2.0` (Linux for Tegra, JetPack 6.0)
-- Optimized for Jetson platform with L4T drivers
-- Uses `jtop` (jetson-stats) or sysfs for GPU monitoring
-- Supports Jetson Orin (JetPack 6.x)
+#### `Dockerfile.jetson` & `Dockerfile.jetson-orin` - For NVIDIA Jetson Orin
+**Base Image:** `nvcr.io/nvidia/l4t-base:r36.2.0` (L4T r36.2.0, JetPack 6.0)
+- Optimized for Jetson Orin platform (AGX Orin, Orin Nano, Orin NX)
+- Uses `jtop` (jetson-stats from PyPI) for GPU monitoring
+- Supports JetPack 6.x
 - Image size: ~1.2GB (compressed)
-- **Note**: Jetson Thor (JetPack 7.x / L4T r38.x) may require a separate Dockerfile when L4T r38.x images become available
 
 **Build:**
 ```bash
-docker build -f Dockerfile.jetson -t live-vlm-webui:jetson .
+docker build -f Dockerfile.jetson -t live-vlm-webui:jetson-orin .
+# Or explicitly:
+docker build -f Dockerfile.jetson-orin -t live-vlm-webui:jetson-orin .
+```
+
+#### `Dockerfile.jetson-thor` - For NVIDIA Jetson Thor
+**Base Image:** `nvcr.io/nvidia/l4t-base:r38.x.x` (L4T r38.x, JetPack 7.x - not yet available)
+- Optimized for Jetson Thor platform (AGX Thor Developer Kit)
+- Uses `jtop` (jetson-stats from GitHub) for latest Thor support
+- Installs from GitHub: `git+https://github.com/rbonghi/jetson_stats.git`
+- **Status:** Template ready, waiting for L4T r38.x base image release
+
+**Build (when L4T r38.x is available):**
+```bash
+docker build -f Dockerfile.jetson-thor -t live-vlm-webui:jetson-thor .
 ```
 
 **Why separate Dockerfiles?**
