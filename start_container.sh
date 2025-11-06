@@ -31,13 +31,13 @@ if [ "$ARCH" = "x86_64" ]; then
     IMAGE_TAG="latest-x86"
     GPU_FLAG="--gpus all"
     echo -e "   Platform: ${GREEN}PC (x86_64)${NC}"
-    
+
 elif [ "$ARCH" = "aarch64" ]; then
     # Check if it's a Jetson
     if [ -f /etc/nv_tegra_release ]; then
         # Read L4T version
         L4T_VERSION=$(head -n 1 /etc/nv_tegra_release | grep -oP 'R\K[0-9]+')
-        
+
         # Check for Thor (L4T R38+) vs Orin (L4T R36)
         if [ "$L4T_VERSION" -ge 38 ]; then
             PLATFORM="jetson-thor"
@@ -62,7 +62,7 @@ fi
 
 # Container name
 CONTAINER_NAME="live-vlm-webui"
-IMAGE_NAME="ghcr.io/USERNAME/live-vlm-webui:${IMAGE_TAG}"  # Update USERNAME
+IMAGE_NAME="ghcr.io/nvidia-ai-iot/live-vlm-webui:${IMAGE_TAG}"
 
 # Check if container already exists
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -126,12 +126,12 @@ if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo ""
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN}🌐 Access the Web UI at:${NC}"
-    
+
     # Get IP addresses
     if command -v hostname &> /dev/null; then
         HOSTNAME=$(hostname)
         echo -e "   Local:   ${GREEN}https://localhost:8090${NC}"
-        
+
         # Try to get network IP
         if command -v hostname &> /dev/null; then
             NETWORK_IP=$(hostname -I | awk '{print $1}')
@@ -140,7 +140,7 @@ if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
             fi
         fi
     fi
-    
+
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${YELLOW}📋 Useful commands:${NC}"

@@ -86,7 +86,7 @@ The easiest way to run Live-VLM-WebUI is using our pre-built Docker containers f
 
 ```bash
 # Clone and run
-git clone https://github.com/YOUR_USERNAME/live-vlm-webui.git
+git clone https://github.com/nvidia-ai-iot/live-vlm-webui.git
 cd live-vlm-webui
 ./start_container.sh
 ```
@@ -101,9 +101,9 @@ The script will:
 
 | Platform | Image Tag | Pull Command |
 |----------|-----------|--------------|
-| **PC (x86_64)** | `latest-x86` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-x86` |
-| **Jetson Orin** | `latest-jetson-orin` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-orin` |
-| **Jetson Thor** | `latest-jetson-thor` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-thor` |
+| **PC (x86_64)** | `latest-x86` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-x86` |
+| **Jetson Orin** | `latest-jetson-orin` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin` |
+| **Jetson Thor** | `latest-jetson-thor` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor` |
 
 ### Manual Docker Run
 
@@ -115,7 +115,7 @@ docker run -d \
   --name live-vlm-webui \
   --network host \
   --gpus all \
-  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-x86
+  ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-x86
 ```
 
 **Jetson Orin:**
@@ -126,7 +126,7 @@ docker run -d \
   --runtime nvidia \
   --privileged \
   -v /run/jtop.sock:/run/jtop.sock:ro \
-  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-orin
+  ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin
 ```
 
 **Jetson Thor:**
@@ -137,7 +137,7 @@ docker run -d \
   --gpus all \
   --privileged \
   -v /run/jtop.sock:/run/jtop.sock:ro \
-  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-thor
+  ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor
 ```
 
 Then access the web UI at `https://localhost:8090`
