@@ -65,7 +65,7 @@ elif [ "$ARCH" = "x86_64" ]; then
     echo -e "   Platform: ${GREEN}PC (x86_64)${NC}"
 
 elif [ "$ARCH" = "aarch64" ]; then
-    # Check if it's a Jetson
+    # Check if it's a Jetson (has L4T)
     if [ -f /etc/nv_tegra_release ]; then
         # Read L4T version
         L4T_VERSION=$(head -n 1 /etc/nv_tegra_release | grep -oP 'R\K[0-9]+')
@@ -83,9 +83,19 @@ elif [ "$ARCH" = "aarch64" ]; then
             echo -e "   Platform: ${GREEN}NVIDIA Jetson Orin${NC} (L4T R${L4T_VERSION})"
         fi
     else
-        echo -e "${RED}❌ ARM64 platform detected but not a Jetson${NC}"
-        echo -e "${RED}   This script is designed for x86_64 PC or NVIDIA Jetson platforms${NC}"
-        exit 1
+        # ARM64 SBSA (DGX Spark, ARM servers)
+        # Check if NVIDIA GPU is available
+        if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
+            PLATFORM="arm64-sbsa"
+            IMAGE_TAG="latest-x86"  # Use same image as x86 (multi-arch CUDA base)
+            GPU_FLAG="--gpus all"
+            echo -e "   Platform: ${GREEN}ARM64 SBSA with NVIDIA GPU${NC} (DGX Spark, ARM server)"
+            echo -e "   ${YELLOW}Note: Using standard CUDA container (same as x86)${NC}"
+        else
+            echo -e "${RED}❌ ARM64 platform detected without NVIDIA GPU${NC}"
+            echo -e "${RED}   Supported: x86 PC, DGX Spark, Jetson Thor/Orin${NC}"
+            exit 1
+        fi
     fi
 else
     echo -e "${RED}❌ Unsupported architecture: ${ARCH}${NC}"
