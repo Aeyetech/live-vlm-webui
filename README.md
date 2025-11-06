@@ -78,6 +78,72 @@ The VLM processes frames asynchronously in the background. The video stream cont
   - Any OpenAI-compatible API
 - Webcam (V4L2 compliant video source)
 
+## 🐋 Quick Start with Docker (Recommended)
+
+The easiest way to run Live-VLM-WebUI is using our pre-built Docker containers from GitHub Container Registry.
+
+### Auto-Detect Platform and Run
+
+```bash
+# Clone and run
+git clone https://github.com/YOUR_USERNAME/live-vlm-webui.git
+cd live-vlm-webui
+./start_container.sh
+```
+
+The script will:
+- ✅ Auto-detect your platform (PC x86_64, Jetson Orin, or Jetson Thor)
+- ✅ Pull the appropriate image from ghcr.io
+- ✅ Configure GPU access automatically
+- ✅ Start the container with correct settings
+
+### Available Pre-built Images
+
+| Platform | Image Tag | Pull Command |
+|----------|-----------|--------------|
+| **PC (x86_64)** | `latest-x86` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-x86` |
+| **Jetson Orin** | `latest-jetson-orin` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-orin` |
+| **Jetson Thor** | `latest-jetson-thor` | `docker pull ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-thor` |
+
+### Manual Docker Run
+
+If you prefer manual control:
+
+**PC (x86_64):**
+```bash
+docker run -d \
+  --name live-vlm-webui \
+  --network host \
+  --gpus all \
+  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-x86
+```
+
+**Jetson Orin:**
+```bash
+docker run -d \
+  --name live-vlm-webui \
+  --network host \
+  --runtime nvidia \
+  --privileged \
+  -v /run/jtop.sock:/run/jtop.sock:ro \
+  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-orin
+```
+
+**Jetson Thor:**
+```bash
+docker run -d \
+  --name live-vlm-webui \
+  --network host \
+  --gpus all \
+  --privileged \
+  -v /run/jtop.sock:/run/jtop.sock:ro \
+  ghcr.io/YOUR_USERNAME/live-vlm-webui:latest-jetson-thor
+```
+
+Then access the web UI at `https://localhost:8090`
+
+---
+
 ## Installation
 
 1. **Clone the repository**:
