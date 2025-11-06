@@ -160,7 +160,7 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             width: 90%;
-            max-width: 500px;
+            max-width: 900px;
             max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -202,6 +202,9 @@
 
         .settings-body {
             padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
         }
 
         .settings-section {
@@ -210,6 +213,11 @@
 
         .settings-section:last-child {
             margin-bottom: 0;
+        }
+
+        /* Full width section for sections that need it */
+        .settings-section.full-width {
+            grid-column: 1 / -1;
         }
 
         .settings-section-title {
@@ -923,6 +931,12 @@
         .logo .lucide {
             width: 28px;
             height: 28px;
+            filter: drop-shadow(0 0 8px var(--accent-color));
+        }
+
+        /* Logo color - theme-aware */
+        body.light-theme .logo .lucide {
+            filter: drop-shadow(0 0 6px rgba(94, 148, 0, 0.8));
         }
 
         .icon-btn .lucide,
@@ -942,7 +956,244 @@
             height: 20px;
             margin-right: 6px;
         }
+
+        /* Default: Neutral icon colors (clean two-tone system) */
+        .panel-icon svg,
+        .panel-icon .lucide,
+        .result-title svg,
+        .result-title .lucide {
+            stroke: var(--text-secondary) !important;
+        }
+
+        /* Colorful icon strokes (only when enabled) - Dark theme */
+        body.colorful-focus .panel-icon:has([data-lucide="globe"]) svg,
+        body.colorful-focus .panel-icon:has([data-lucide="globe"]) .lucide {
+            stroke: rgb(34, 211, 238) !important; /* Softer cyan */
+        }
+
+        body.colorful-focus .panel-icon:has([data-lucide="video"]) svg,
+        body.colorful-focus .panel-icon:has([data-lucide="video"]) .lucide {
+            stroke: rgb(59, 130, 246) !important; /* Blue */
+        }
+
+        body.colorful-focus .panel-icon:has([data-lucide="edit-3"]) svg,
+        body.colorful-focus .panel-icon:has([data-lucide="edit-3"]) .lucide {
+            stroke: rgb(251, 191, 36) !important; /* Yellow/Orange */
+        }
+
+        body.colorful-focus .result-title:has([data-lucide="bot"]) svg,
+        body.colorful-focus .result-title:has([data-lucide="bot"]) .lucide {
+            stroke: rgb(168, 85, 247) !important; /* Purple */
+        }
+
+        body.colorful-focus #systemStatsCard .result-title:has([data-lucide="activity"]) svg,
+        body.colorful-focus #systemStatsCard .result-title:has([data-lucide="activity"]) .lucide {
+            stroke: rgb(118, 185, 0) !important; /* NVIDIA Green */
+        }
+
+        /* Colorful icon strokes - Light theme (darker variants) */
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="globe"]) svg,
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="globe"]) .lucide {
+            stroke: rgb(6, 182, 212) !important; /* Darker cyan */
+        }
+
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="video"]) svg,
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="video"]) .lucide {
+            stroke: rgb(37, 99, 235) !important; /* Darker blue */
+        }
+
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="edit-3"]) svg,
+        body.light-theme.colorful-focus .panel-icon:has([data-lucide="edit-3"]) .lucide {
+            stroke: rgb(217, 119, 6) !important; /* Darker orange */
+        }
+
+        body.light-theme.colorful-focus .result-title:has([data-lucide="bot"]) svg,
+        body.light-theme.colorful-focus .result-title:has([data-lucide="bot"]) .lucide {
+            stroke: rgb(126, 34, 206) !important; /* Darker purple */
+        }
+
+        body.light-theme.colorful-focus #systemStatsCard .result-title:has([data-lucide="activity"]) svg,
+        body.light-theme.colorful-focus #systemStatsCard .result-title:has([data-lucide="activity"]) .lucide {
+            stroke: rgb(94, 148, 0) !important; /* Darker NVIDIA green */
+        }
+
+        /* Settings icon - theme-aware */
+        .settings-btn .lucide {
+            stroke: rgb(200, 200, 200);
+        }
+        body.light-theme .settings-btn .lucide {
+            stroke: rgb(100, 100, 100); /* Darker gray for light mode */
+        }
+
+        /* Theme toggle icons - Yellow/Gold */
+        #themeIcon .lucide {
+            stroke: rgb(247, 224, 166); /* Bright gold for dark mode (moon) */
+        }
+        body.light-theme #themeIcon .lucide {
+            stroke: rgb(223, 168, 4); /* Darker gold for light mode (sun) */
+        }
+
+        /* Video control buttons - Teal */
+        .video-control-btn .lucide {
+            stroke: rgb(20, 184, 166);
+        }
+        body.light-theme .video-control-btn .lucide {
+            stroke: rgb(13, 148, 136); /* Darker teal for light mode */
+        }
+
+        /* Action button icons (refresh, play, stop) - NVIDIA Green */
+        .btn-primary .lucide {
+            stroke: rgb(118, 185, 0);
+        }
+        body.light-theme .btn-primary .lucide {
+            stroke: rgb(94, 148, 0); /* Darker green for light mode */
+        }
+
+        /* Input fields - Focus and Apply animations */
+        #promptText,
+        #maxTokens,
+        #processEvery,
+        #apiBaseUrl,
+        #apiKey,
+        #modelSelect,
+        #cameraSelect {
+            transition: all 0.3s ease;
+        }
+
+        /* Default: Neutral white focus glow (when colorful is disabled) */
+        #promptText:focus,
+        #maxTokens:focus,
+        #processEvery:focus,
+        #cameraSelect:focus,
+        #apiBaseUrl:focus,
+        #apiKey:focus,
+        #modelSelect:focus {
+            border-color: rgba(200, 200, 200, 0.6) !important;
+            box-shadow: 0 0 0 2px rgba(200, 200, 200, 0.15),
+                        0 0 8px rgba(200, 200, 200, 0.2) !important;
+            outline: none;
+        }
+
+        /* Colorful focus glows (only when enabled) */
+        body.colorful-focus #promptText:focus,
+        body.colorful-focus #maxTokens:focus {
+            border-color: rgb(251, 191, 36) !important;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3),
+                        0 0 12px rgba(251, 191, 36, 0.4) !important;
+        }
+
+        body.colorful-focus #processEvery:focus,
+        body.colorful-focus #cameraSelect:focus {
+            border-color: rgb(59, 130, 246) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3),
+                        0 0 12px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        body.colorful-focus #apiBaseUrl:focus,
+        body.colorful-focus #apiKey:focus,
+        body.colorful-focus #modelSelect:focus {
+            border-color: rgb(34, 211, 238) !important;
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25),
+                        0 0 12px rgba(34, 211, 238, 0.3) !important;
+        }
+
+        /* Bright flash animation when applied (on blur) */
+        @keyframes settingApplied {
+            0% {
+                box-shadow: 0 0 0 0 rgba(118, 185, 0, 0.7),
+                           0 0 20px rgba(118, 185, 0, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(118, 185, 0, 0.3),
+                           0 0 30px rgba(118, 185, 0, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(118, 185, 0, 0),
+                           0 0 0 rgba(118, 185, 0, 0);
+            }
+        }
+
+        #promptText.applied,
+        #maxTokens.applied,
+        #processEvery.applied,
+        #apiBaseUrl.applied,
+        #apiKey.applied,
+        #modelSelect.applied,
+        #cameraSelect.applied {
+            animation: settingApplied 0.6s ease-out;
+        }
+
+
+        /* ===== GRADIENT STROKES (Optional - gradients may not work reliably with Lucide) ===== */
+        /*
+        .panel-icon [data-lucide="globe"] svg {
+            stroke: url(#gradient-cyan) !important;
+        }
+
+        .panel-icon [data-lucide="video"] svg {
+            stroke: url(#gradient-blue) !important;
+        }
+
+        .panel-icon [data-lucide="edit-3"] svg {
+            stroke: url(#gradient-orange) !important;
+        }
+
+        .result-title [data-lucide="bot"] svg {
+            stroke: url(#gradient-purple) !important;
+        }
+
+        #systemStatsCard .result-title [data-lucide="activity"] svg {
+            stroke: url(#gradient-green) !important;
+        }
+        */
+
     </style>
+
+    <!-- SVG Gradient Definitions (for gradient strokes) -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <!-- Cyan gradient -->
+            <linearGradient id="gradient-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(34, 211, 238);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(6, 182, 212);stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Blue gradient -->
+            <linearGradient id="gradient-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(96, 165, 250);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(59, 130, 246);stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Orange/Yellow gradient -->
+            <linearGradient id="gradient-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(251, 191, 36);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(245, 158, 11);stop-opacity:1" />
+            </linearGradient>
+
+            <!-- Purple gradient -->
+            <linearGradient id="gradient-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(192, 132, 252);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(168, 85, 247);stop-opacity:1" />
+            </linearGradient>
+
+            <!-- NVIDIA Green gradient -->
+            <linearGradient id="gradient-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(139, 201, 25);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(118, 185, 0);stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Lucide Icons - Load before body scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Initialize Lucide icons immediately when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        } else {
+            lucide.createIcons();
+        }
+    </script>
 </head>
 <body>
     <!-- Header -->
@@ -980,79 +1231,100 @@
                 <button class="settings-close" id="settingsClose">×</button>
             </div>
             <div class="settings-body">
-                <div class="settings-section">
-                    <div class="settings-section-title">Layout</div>
+                <!-- Column 1: Layout & Visual Effects -->
+                <div>
+                    <div class="settings-section">
+                        <div class="settings-section-title">Layout</div>
 
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-item-label">Main Content Order</div>
-                            <div class="settings-item-description">Choose which element appears at the top</div>
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">Main Content Order</div>
+                                <div class="settings-item-description">Choose which element appears at the top</div>
+                            </div>
+                            <select id="layoutOrder" class="settings-select">
+                                <option value="video-first">Camera → VLM Output Info</option>
+                                <option value="vlm-first" selected>VLM Output Info → Camera</option>
+                            </select>
                         </div>
-                        <select id="layoutOrder" class="settings-select">
-                            <option value="video-first">Camera → VLM Output Info</option>
-                            <option value="vlm-first" selected>VLM Output Info → Camera</option>
-                        </select>
+
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">VLM Output on Camera View</div>
+                                <div class="settings-item-description">Show text overlay directly on video feed</div>
+                            </div>
+                            <select id="overlayPosition" class="settings-select">
+                                <option value="none">None</option>
+                                <option value="top">At the top</option>
+                                <option value="bottom">At the bottom</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-item-label">VLM Output on Camera View</div>
-                            <div class="settings-item-description">Show text overlay directly on video feed</div>
+                    <div class="settings-section">
+                        <div class="settings-section-title">Visual Effects</div>
+
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">Pop-in Animation</div>
+                                <div class="settings-item-description">Scale animation when new VLM response arrives</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="popInToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
-                        <select id="overlayPosition" class="settings-select">
-                            <option value="none">None</option>
-                            <option value="top">At the top</option>
-                            <option value="bottom">At the bottom</option>
-                        </select>
+
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">Green Glow Effect</div>
+                                <div class="settings-item-description">Border glow on new VLM response</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="glowToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">Fade Effect</div>
+                                <div class="settings-item-description">Gradually fade response after 2 seconds</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="fadeToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <div class="settings-section">
-                    <div class="settings-section-title">Visual Effects</div>
+                <!-- Column 2: Input Colors & WebRTC -->
+                <div>
+                    <div class="settings-section">
+                        <div class="settings-section-title">Visual Style</div>
 
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-item-label">Pop-in Animation</div>
-                            <div class="settings-item-description">Scale animation when new VLM response arrives</div>
+                        <div class="settings-item">
+                            <div>
+                                <div class="settings-item-label">Colorful UI Accents</div>
+                                <div class="settings-item-description">Color-coded icons and input focus glows</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="colorfulFocusToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="popInToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
                     </div>
 
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-item-label">Green Glow Effect</div>
-                            <div class="settings-item-description">Border glow on new VLM response</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="glowToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
+                    <div class="settings-section">
+                        <div class="settings-section-title">WebRTC</div>
 
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-item-label">Fade Effect</div>
-                            <div class="settings-item-description">Gradually fade response after 2 seconds</div>
+                        <div class="settings-item">
+                            <div style="flex: 1; min-width: 0;">
+                                <div class="settings-item-label">Max Video Latency (seconds)</div>
+                                <div class="settings-item-description">Drop old frames if delay exceeds this (0 = no intervention)</div>
+                            </div>
+                            <input type="number" id="maxLatency" value="0" min="0" max="10.0" step="0.1" style="width: 80px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="fadeToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <div class="settings-section-title">WebRTC</div>
-
-                    <div class="settings-item">
-                        <div style="flex: 1; min-width: 0;">
-                            <div class="settings-item-label">Max Video Latency (seconds)</div>
-                            <div class="settings-item-description">Drop old frames if delay exceeds this (0 = no intervention)</div>
-                        </div>
-                        <input type="number" id="maxLatency" value="0" min="0" max="10.0" step="0.1" style="width: 80px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
                     </div>
                 </div>
             </div>
@@ -1426,6 +1698,25 @@
                     alert('Failed to switch camera: ' + err.message);
                 }
             }
+
+            // Trigger flash animation
+            const cameraSelect = document.getElementById('cameraSelect');
+            cameraSelect.classList.add('applied');
+            setTimeout(() => {
+                cameraSelect.classList.remove('applied');
+            }, 600);
+        });
+
+        // Also trigger flash on blur (when dropdown closes)
+        document.getElementById('cameraSelect').addEventListener('blur', () => {
+            const cameraSelect = document.getElementById('cameraSelect');
+            if (cameraSelect.value) {
+                // Trigger flash animation
+                cameraSelect.classList.add('applied');
+                setTimeout(() => {
+                    cameraSelect.classList.remove('applied');
+                }, 600);
+            }
         });
 
         // Enumerate cameras on page load
@@ -1447,6 +1738,18 @@
             themeIcon.innerHTML = '<i data-lucide="sun"></i>';
             themeText.textContent = 'Light';
             lucide.createIcons();
+        }
+
+        // Load saved colorful UI accents setting (default: disabled for clean two-tone system)
+        const colorfulFocusToggle = document.getElementById('colorfulFocusToggle');
+        const colorfulFocusSaved = localStorage.getItem('colorfulFocus');
+        if (colorfulFocusSaved === 'true') {
+            document.body.classList.add('colorful-focus');
+            colorfulFocusToggle.checked = true;
+        } else {
+            // Default: neutral white/gray icons and focus glows with green flash
+            document.body.classList.remove('colorful-focus');
+            colorfulFocusToggle.checked = false;
         }
 
         // Settings Modal
@@ -1539,6 +1842,18 @@
         fadeToggle.addEventListener('change', (e) => {
             settings.fade = e.target.checked;
             localStorage.setItem('fade', settings.fade);
+        });
+
+        colorfulFocusToggle.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            localStorage.setItem('colorfulFocus', enabled);
+            if (enabled) {
+                document.body.classList.add('colorful-focus');
+            } else {
+                document.body.classList.remove('colorful-focus');
+            }
+            // Force icon re-render to apply new colors
+            lucide.createIcons();
         });
 
         overlayPosition.addEventListener('change', (e) => {
@@ -1710,6 +2025,24 @@
                 }));
                 updateStatus('Model configured', 'connected');
             }
+
+            // Trigger flash animation
+            modelSelect.classList.add('applied');
+            setTimeout(() => {
+                modelSelect.classList.remove('applied');
+            }, 600);
+        });
+
+        // Also trigger flash on blur (when dropdown closes)
+        modelSelect.addEventListener('blur', () => {
+            const currentModel = modelSelect.value;
+            if (currentModel) {
+                // Trigger flash animation
+                modelSelect.classList.add('applied');
+                setTimeout(() => {
+                    modelSelect.classList.remove('applied');
+                }, 600);
+            }
         });
 
         // Helper function to apply prompt settings
@@ -1739,17 +2072,46 @@
             if (e.target.value) {
                 promptText.value = e.target.value;
                 applyPromptSettings();
+
+                // Trigger flash animation to show prompt was applied
+                promptText.classList.add('applied');
+                setTimeout(() => {
+                    promptText.classList.remove('applied');
+                }, 600); // Match animation duration
             }
         });
 
         // Auto-apply prompt on blur (when user finishes editing)
         promptText.addEventListener('blur', () => {
             applyPromptSettings();
+
+            // Trigger flash animation to show prompt was applied
+            promptText.classList.add('applied');
+            setTimeout(() => {
+                promptText.classList.remove('applied');
+            }, 600); // Match animation duration
         });
 
         // Auto-apply when max tokens changes
         maxTokens.addEventListener('change', () => {
             applyPromptSettings();
+
+            // Trigger flash animation to show setting was applied
+            maxTokens.classList.add('applied');
+            setTimeout(() => {
+                maxTokens.classList.remove('applied');
+            }, 600); // Match animation duration
+        });
+
+        // Also trigger flash on blur (after tabbing away or clicking out)
+        maxTokens.addEventListener('blur', () => {
+            applyPromptSettings();
+
+            // Trigger flash animation
+            maxTokens.classList.add('applied');
+            setTimeout(() => {
+                maxTokens.classList.remove('applied');
+            }, 600);
         });
 
         refreshModelsBtn.addEventListener('click', fetchModels);
@@ -1793,12 +2155,24 @@
             checkApiKeyRequirement(e.target.value);
             updateSystemStatsVisibility(e.target.value);
             applyApiSettings({ refreshModels: true, showFeedback: true });
+
+            // Trigger flash animation
+            apiBaseUrl.classList.add('applied');
+            setTimeout(() => {
+                apiBaseUrl.classList.remove('applied');
+            }, 600);
         });
 
         apiBaseUrl.addEventListener('change', (e) => {
             checkApiKeyRequirement(e.target.value);
             updateSystemStatsVisibility(e.target.value);
             applyApiSettings({ refreshModels: true, showFeedback: true });
+
+            // Trigger flash animation
+            apiBaseUrl.classList.add('applied');
+            setTimeout(() => {
+                apiBaseUrl.classList.remove('applied');
+            }, 600);
         });
 
         // Auto-apply API settings when API Key changes (with debounce)
@@ -1808,6 +2182,18 @@
             apiKeyDebounceTimer = setTimeout(() => {
                 applyApiSettings({ showFeedback: false });
             }, 1000); // Wait 1 second after user stops typing
+        });
+
+        // Flash animation when API Key loses focus
+        apiKey.addEventListener('blur', () => {
+            clearTimeout(apiKeyDebounceTimer);
+            applyApiSettings({ showFeedback: false });
+
+            // Trigger flash animation
+            apiKey.classList.add('applied');
+            setTimeout(() => {
+                apiKey.classList.remove('applied');
+            }, 600);
         });
 
         // API Presets Menu
@@ -1875,6 +2261,30 @@
                     process_every: interval
                 }));
             }
+
+            // Trigger flash animation
+            processEvery.classList.add('applied');
+            setTimeout(() => {
+                processEvery.classList.remove('applied');
+            }, 600);
+        });
+
+        // Also trigger flash on blur
+        processEvery.addEventListener('blur', () => {
+            const interval = parseInt(processEvery.value) || 30;
+
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({
+                    type: 'update_processing',
+                    process_every: interval
+                }));
+            }
+
+            // Trigger flash animation
+            processEvery.classList.add('applied');
+            setTimeout(() => {
+                processEvery.classList.remove('applied');
+            }, 600);
         });
 
         // Auto-apply max latency on change
@@ -1899,14 +2309,16 @@
 
             if (!data || data.length === 0) return;
 
-            const max = Math.max(...data, 1);
-            const step = width / (data.length - 1 || 1);
+            // Filter out null/undefined values and convert to numbers
+            const validData = data.map(v => v === null || v === undefined ? 0 : v);
+            const max = Math.max(...validData, 1);
+            const step = width / (validData.length - 1 || 1);
 
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
             ctx.beginPath();
 
-            data.forEach((value, index) => {
+            validData.forEach((value, index) => {
                 const x = index * step;
                 const y = height - (value / max) * height;
 
@@ -1944,7 +2356,7 @@
             const systemInfoElem = document.getElementById('systemInfoHeader');
             const productName = stats.product_name;
             const gpuCores = stats.gpu_cores || 0;
-            
+
             if (boardName && typeof boardName === 'string') {
                 // Jetson: Show board name prominently with GPU suffix
                 const gpuDisplayName = gpuName.includes('GPU') ? gpuName : `${gpuName} GPU`;
@@ -1960,11 +2372,19 @@
             }
 
             // GPU (Green)
-            const gpuPercent = stats.gpu_percent || 0;
-            document.getElementById('gpuUtil').textContent = `${gpuPercent.toFixed(1)}%`;
-            const gpuBar = document.getElementById('gpuUtilBar');
-            gpuBar.style.width = `${gpuPercent}%`;
-            gpuBar.style.background = '#4CAF50';  // Green
+            const gpuPercent = stats.gpu_percent;
+            if (gpuPercent === null || gpuPercent === undefined) {
+                // GPU utilization unavailable (e.g., Mac without sudo)
+                document.getElementById('gpuUtil').textContent = 'N/A';
+                const gpuBar = document.getElementById('gpuUtilBar');
+                gpuBar.style.width = '0%';
+                gpuBar.style.background = '#666';  // Gray for unavailable
+            } else {
+                document.getElementById('gpuUtil').textContent = `${gpuPercent.toFixed(1)}%`;
+                const gpuBar = document.getElementById('gpuUtilBar');
+                gpuBar.style.width = `${gpuPercent}%`;
+                gpuBar.style.background = '#4CAF50';  // Green
+            }
 
             // VRAM (Purple)
             const vramUsed = stats.vram_used_gb || 0;
@@ -2270,9 +2690,6 @@
             lucide.createIcons();
         });
     </script>
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
 </body>
 </html>
 

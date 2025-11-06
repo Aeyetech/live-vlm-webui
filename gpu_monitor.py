@@ -512,7 +512,7 @@ class AppleSiliconMonitor(GPUMonitor):
         self.product_name = ""
         self.use_powermetrics = False
         self.powermetrics_warned = False
-        
+
         # Detect chip type and variant
         try:
             result = subprocess.run(
@@ -528,7 +528,7 @@ class AppleSiliconMonitor(GPUMonitor):
                     for chip in ["M4", "M3", "M2", "M1"]:  # Check in reverse order for correct match
                         if chip in cpu_brand:
                             self.chip_type = chip
-                            
+
                             # Extract variant (Pro, Max, Ultra)
                             if "Ultra" in cpu_brand:
                                 self.chip_variant = "Ultra"
@@ -536,20 +536,21 @@ class AppleSiliconMonitor(GPUMonitor):
                                 self.chip_variant = "Max"
                             elif "Pro" in cpu_brand:
                                 self.chip_variant = "Pro"
-                            
+
                             # Build GPU name with variant
                             if self.chip_variant:
                                 self.gpu_name = f"{chip} {self.chip_variant}"
                             else:
                                 self.gpu_name = chip
-                            
+
                             break
                 logger.info(f"Apple Silicon detected: {cpu_brand}")
                 self.available = True
         except Exception as e:
             logger.warning(f"Failed to detect Apple Silicon: {e}")
-        
+
         # Get product name (MacBook Pro 16", etc.)
+        model_id = ""
         try:
             result = subprocess.run(
                 ["system_profiler", "SPHardwareDataType"],
@@ -562,15 +563,45 @@ class AppleSiliconMonitor(GPUMonitor):
                     if 'Model Name:' in line:
                         # Extract "MacBook Pro" etc.
                         self.product_name = line.split(':')[1].strip()
-                    elif 'Model Identifier:' in line and not self.product_name:
-                        # Fallback to model identifier
+                    elif 'Model Identifier:' in line:
                         model_id = line.split(':')[1].strip()
-                        # Try to make it readable (e.g., "Mac16,10" -> "Mac")
-                        if ',' in model_id:
-                            self.product_name = model_id.split(',')[0]
+                
+                # Try to get screen size from display info
+                if self.product_name and 'MacBook' in self.product_name:
+                    try:
+                        display_result = subprocess.run(
+                            ["system_profiler", "SPDisplaysDataType"],
+                            capture_output=True,
+                            text=True,
+                            timeout=3
+                        )
+                        if display_result.returncode == 0:
+                            # Look for built-in display resolution to infer size
+                            lines = display_result.stdout.split('\n')
+                            for i, line in enumerate(lines):
+                                if 'Built-In' in line or 'Color LCD' in line:
+                                    # Check next few lines for resolution
+                                    for j in range(i, min(i+10, len(lines))):
+                                        if 'Resolution:' in lines[j]:
+                                            res = lines[j].lower()
+                                            # Infer screen size from resolution
+                                            if '3456' in res or '3024' in res:  # 14" and 16" MacBook Pro
+                                                # Check if it's 16" (3456x2234) or 14" (3024x1964)
+                                                if '3456' in res:
+                                                    self.product_name += ' 16"'
+                                                elif '3024' in res:
+                                                    self.product_name += ' 14"'
+                                            elif '2880' in res and '1800' in res:  # 15" MacBook Air
+                                                self.product_name += ' 15"'
+                                            elif '2560' in res and '1664' in res:  # 13" MacBook Air/Pro
+                                                self.product_name += ' 13"'
+                                            break
+                                    break
+                    except Exception as e:
+                        logger.debug(f"Could not determine screen size: {e}")
         except Exception as e:
             logger.debug(f"Could not get product name: {e}")
-        
+
         # Get actual GPU core count from system_profiler
         try:
             result = subprocess.run(
@@ -630,7 +661,7 @@ class AppleSiliconMonitor(GPUMonitor):
             }
 
         # Try to get GPU stats via powermetrics (requires sudo, so will likely fail)
-        gpu_percent = 0
+        gpu_percent = None  # None = unavailable, will show as "N/A" in UI
         if self.use_powermetrics and not self.powermetrics_warned:
             try:
                 # powermetrics requires sudo and is heavyweight
