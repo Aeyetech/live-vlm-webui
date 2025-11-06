@@ -15,10 +15,12 @@ echo -e "${BLUE}    Live-VLM-WebUI Docker Container Starter${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Detect architecture
+# Detect architecture and OS
 ARCH=$(uname -m)
+OS=$(uname -s)
 echo -e "${YELLOW}🔍 Detecting platform...${NC}"
 echo -e "   Architecture: ${GREEN}${ARCH}${NC}"
+echo -e "   OS: ${GREEN}${OS}${NC}"
 
 # Detect platform type
 PLATFORM="unknown"
@@ -26,7 +28,37 @@ IMAGE_TAG="latest"
 GPU_FLAG=""
 RUNTIME_FLAG=""
 
-if [ "$ARCH" = "x86_64" ]; then
+# Check if running on macOS
+if [ "$OS" = "Darwin" ]; then
+    PLATFORM="mac"
+    IMAGE_TAG="mac"
+    GPU_FLAG=""  # No GPU support on Mac Docker
+    echo -e "   Platform: ${GREEN}macOS (Apple Silicon)${NC}"
+    echo ""
+    echo -e "${YELLOW}⚠️  Note: Docker on Mac runs in a Linux VM${NC}"
+    echo -e "${YELLOW}   - No Metal GPU access${NC}"
+    echo -e "${YELLOW}   - Container will connect to Ollama on host${NC}"
+    echo -e "${YELLOW}   - For best performance, use native Python instead!${NC}"
+    echo -e "${YELLOW}     See: docs/cursor/MAC_SETUP.md${NC}"
+    echo ""
+
+    # Check if Ollama is running on host
+    if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+        echo -e "${RED}❌ Ollama not detected on host!${NC}"
+        echo -e "${YELLOW}   Start Ollama first:${NC}"
+        echo -e "   ${GREEN}ollama serve &${NC}"
+        echo -e "   ${GREEN}ollama pull llama3.2-vision:11b${NC}"
+        echo ""
+        read -p "Continue anyway? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}✅ Ollama detected on host${NC}"
+    fi
+
+elif [ "$ARCH" = "x86_64" ]; then
     PLATFORM="x86"
     IMAGE_TAG="latest-x86"
     GPU_FLAG="--gpus all"
@@ -62,7 +94,29 @@ fi
 
 # Container name
 CONTAINER_NAME="live-vlm-webui"
-IMAGE_NAME="ghcr.io/nvidia-ai-iot/live-vlm-webui:${IMAGE_TAG}"
+
+# Set image name based on platform
+if [ "$PLATFORM" = "mac" ]; then
+    # Mac: Use local image (not from registry)
+    IMAGE_NAME="live-vlm-webui:${IMAGE_TAG}"
+    echo ""
+    echo -e "${YELLOW}ℹ️  Mac uses local Docker image${NC}"
+
+    # Check if image exists
+    if ! docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^${IMAGE_NAME}$"; then
+        echo -e "${RED}❌ Image '${IMAGE_NAME}' not found locally${NC}"
+        echo -e "${YELLOW}   Build it first with:${NC}"
+        echo -e "   ${GREEN}docker build -f Dockerfile.mac -t ${IMAGE_NAME} .${NC}"
+        echo -e "   ${YELLOW}Or use the test script:${NC}"
+        echo -e "   ${GREEN}./test_mac_docker.sh${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✅ Found local image: ${IMAGE_NAME}${NC}"
+    fi
+else
+    # Linux: Use registry image
+    IMAGE_NAME="ghcr.io/nvidia-ai-iot/live-vlm-webui:${IMAGE_TAG}"
+fi
 
 # Check if container already exists
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
@@ -79,39 +133,55 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     fi
 fi
 
-# Pull latest image (optional)
-read -p "Pull latest image from registry? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}📥 Pulling ${IMAGE_NAME}...${NC}"
-    docker pull ${IMAGE_NAME} || {
-        echo -e "${YELLOW}⚠️  Failed to pull from registry, will use local image${NC}"
-    }
+# Pull latest image (optional, skip for Mac)
+if [ "$PLATFORM" != "mac" ]; then
+    read -p "Pull latest image from registry? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}📥 Pulling ${IMAGE_NAME}...${NC}"
+        docker pull ${IMAGE_NAME} || {
+            echo -e "${YELLOW}⚠️  Failed to pull from registry, will use local image${NC}"
+        }
+    fi
 fi
 
 # Build run command based on platform
 echo -e "${BLUE}🚀 Starting container...${NC}"
 
-DOCKER_CMD="docker run -d \
-  --name ${CONTAINER_NAME} \
-  --network host \
-  --privileged"
+if [ "$PLATFORM" = "mac" ]; then
+    # Mac-specific configuration
+    # - Use port mapping (not host network)
+    # - Connect to Ollama on host via host.docker.internal
+    # - No GPU flags needed
+    DOCKER_CMD="docker run -d \
+      --name ${CONTAINER_NAME} \
+      -p 8090:8090 \
+      -e VLM_API_BASE=http://host.docker.internal:11434/v1 \
+      -e VLM_MODEL=llama3.2-vision:11b \
+      ${IMAGE_NAME}"
+else
+    # Linux (PC, Jetson) configuration
+    DOCKER_CMD="docker run -d \
+      --name ${CONTAINER_NAME} \
+      --network host \
+      --privileged"
 
-# Add GPU/runtime flags
-if [ -n "$GPU_FLAG" ]; then
-    DOCKER_CMD="$DOCKER_CMD $GPU_FLAG"
-fi
-if [ -n "$RUNTIME_FLAG" ]; then
-    DOCKER_CMD="$DOCKER_CMD $RUNTIME_FLAG"
-fi
+    # Add GPU/runtime flags
+    if [ -n "$GPU_FLAG" ]; then
+        DOCKER_CMD="$DOCKER_CMD $GPU_FLAG"
+    fi
+    if [ -n "$RUNTIME_FLAG" ]; then
+        DOCKER_CMD="$DOCKER_CMD $RUNTIME_FLAG"
+    fi
 
-# Add Jetson-specific mounts
-if [[ "$PLATFORM" == "jetson-"* ]]; then
-    DOCKER_CMD="$DOCKER_CMD -v /run/jtop.sock:/run/jtop.sock:ro"
-fi
+    # Add Jetson-specific mounts
+    if [[ "$PLATFORM" == "jetson-"* ]]; then
+        DOCKER_CMD="$DOCKER_CMD -v /run/jtop.sock:/run/jtop.sock:ro"
+    fi
 
-# Add image name
-DOCKER_CMD="$DOCKER_CMD ${IMAGE_NAME}"
+    # Add image name
+    DOCKER_CMD="$DOCKER_CMD ${IMAGE_NAME}"
+fi
 
 # Execute
 echo -e "${YELLOW}   Command: ${DOCKER_CMD}${NC}"
