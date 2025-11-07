@@ -881,6 +881,13 @@
             font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .stat-value-denominator {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.85;
         }
 
         .stat-bar {
@@ -2520,7 +2527,7 @@
                 vramBar.style.width = '0%';
                 vramBar.style.background = '#666';  // Gray for unavailable
             } else {
-                document.getElementById('vramUsage').textContent = `${vramUsed.toFixed(1)}/${vramTotal.toFixed(1)} GB`;
+                document.getElementById('vramUsage').innerHTML = `${vramUsed.toFixed(1)}<span class="stat-value-denominator">/${vramTotal.toFixed(1)} GB</span>`;
                 const vramBar = document.getElementById('vramBar');
                 vramBar.style.width = `${vramPercent}%`;
                 vramBar.style.background = '#9C27B0';  // Purple
@@ -2537,7 +2544,7 @@
             const ramUsed = stats.ram_used_gb || 0;
             const ramTotal = stats.ram_total_gb || 0;
             const ramPercent = stats.ram_percent || 0;
-            document.getElementById('ramUsage').textContent = `${ramUsed.toFixed(1)}/${ramTotal.toFixed(1)} GB`;
+            document.getElementById('ramUsage').innerHTML = `${ramUsed.toFixed(1)}<span class="stat-value-denominator">/${ramTotal.toFixed(1)} GB</span>`;
             const ramBar = document.getElementById('ramBar');
             ramBar.style.width = `${ramPercent}%`;
             ramBar.style.background = '#FF9800';  // Orange

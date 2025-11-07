@@ -1,36 +1,54 @@
 version: '3.8'
 
 # ==============================================================================
-# Live VLM WebUI + Ollama
+# Live VLM WebUI - Complete Stack
 # ==============================================================================
-# This is a simpler alternative to vLLM, great for quick testing and demos.
-# Ollama provides an easy-to-use interface for running vision models locally.
+# Unified docker-compose with multiple VLM backends.
+# Choose your backend via profiles (backend-centric design).
+#
+# Available Backends:
+#   - Ollama: Easy local model management (no API keys)
+#   - NVIDIA NIM: Production-grade, advanced reasoning (requires NGC API key)
+#   - vLLM: High-performance inference (coming soon)
+#   - SGLang: Complex reasoning (coming soon)
+#
+# Profiles (Backend + Platform):
+#   Ollama:
+#     - ollama: PC (x86_64) / DGX Spark (ARM64)
+#     - ollama-jetson-thor: Jetson Thor
+#     - ollama-jetson-orin: Jetson Orin
+#
+#   NVIDIA NIM:
+#     - nim: PC (x86_64) / DGX Spark (ARM64)
+#     - nim-jetson-thor: Jetson Thor
+#     - nim-jetson-orin: Jetson Orin (⚠️ Even multi-arch NIM may not work as it expects SBSA)
 #
 # Usage:
-#   # PC (x86_64)
-#   docker compose -f docker-compose.ollama.yml --profile live-vlm-webui-x86 up
-#
-#   # Jetson Orin
-#   docker compose -f docker-compose.ollama.yml --profile live-vlm-webui-jetson-orin up
-#
-#   # Jetson Thor
-#   docker compose -f docker-compose.ollama.yml --profile live-vlm-webui-jetson-thor up
-#
-# After starting, pull a vision model:
+#   # Ollama (PC or DGX Spark)
+#   docker compose --profile ollama up
 #   docker exec ollama ollama pull llama3.2-vision:11b
+#
+#   # NVIDIA NIM (PC or DGX Spark)
+#   export NGC_API_KEY=<your-key>
+#   docker compose --profile nim up
 #
 # Access:
 #   - Live VLM WebUI: https://localhost:8090
 #   - Ollama API: http://localhost:11434/v1
+#   - NIM API: http://localhost:8000/v1
 # ==============================================================================
 
 services:
   # ============================================================================
-  # Ollama Service
+  # Ollama Service (shared across all ollama-* profiles)
   # ============================================================================
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    profiles:
+      - ollama
+      - ollama-jetson-orin
+      - ollama-jetson-thor
     ports:
       - "11434:11434"
     volumes:
@@ -52,13 +70,13 @@ services:
       retries: 5
 
   # ============================================================================
-  # Live VLM WebUI - PC (x86_64)
+  # Live VLM WebUI - PC (x86_64) / DGX Spark (ARM64) [Multi-arch]
   # ============================================================================
-  live-vlm-webui-x86:
-    image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-x86
+  live-vlm-webui:
+    image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest
     container_name: live-vlm-webui
     profiles:
-      - live-vlm-webui-x86
+      - ollama
     network_mode: host
     environment:
       - PYTHONUNBUFFERED=1
@@ -81,7 +99,7 @@ services:
     image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin
     container_name: live-vlm-webui
     profiles:
-      - live-vlm-webui-jetson-orin
+      - ollama-jetson-orin
     network_mode: host
     privileged: true
     volumes:
@@ -101,7 +119,7 @@ services:
     image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor
     container_name: live-vlm-webui
     profiles:
-      - live-vlm-webui-jetson-thor
+      - ollama-jetson-thor
     network_mode: host
     privileged: true
     volumes:
@@ -111,6 +129,143 @@ services:
     restart: unless-stopped
     depends_on:
       ollama:
+        condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+
+  # ============================================================================
+  # NVIDIA NIM - Vision Language Models
+  # ============================================================================
+  # Supports multiple NIM VLM models via environment variables
+  # Default: cosmos-reason1-7b (multi-arch: amd64, arm64)
+  # Docs: https://docs.nvidia.com/nim/vision-language-models/
+  nim:
+    image: ${NIM_IMAGE:-nvcr.io/nim/nvidia/cosmos-reason1-7b:1.4.1}
+    container_name: ${NIM_CONTAINER_NAME:-nim-cosmos-reason1-7b}
+    profiles:
+      - nim
+      - nim-jetson-orin
+      - nim-jetson-thor
+    ports:
+      - "8000:8000"
+    volumes:
+      # Cache downloaded NIM models locally
+      - ${HOME}/.cache/nim:/opt/nim/.cache
+    environment:
+      # Required: NGC API Key (get from https://org.ngc.nvidia.com/setup/api-key)
+      - NGC_API_KEY=${NGC_API_KEY}
+    shm_size: 32gb
+    restart: unless-stopped
+    networks:
+      - vlm-network
+    # GPU configuration
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s  # NIM takes time to start
+
+  # ============================================================================
+  # Live VLM WebUI (NIM) - PC (x86_64) / DGX Spark (ARM64) [Multi-arch]
+  # ============================================================================
+  live-vlm-webui-nim:
+    image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest
+    container_name: live-vlm-webui
+    profiles:
+      - nim
+    network_mode: host  # Required for WebRTC
+    command: >
+      python server.py
+      --host 0.0.0.0
+      --port 8090
+      --ssl-cert cert.pem
+      --ssl-key key.pem
+      --api-base http://localhost:8000/v1
+      --model ${NIM_MODEL_NAME:-nvidia/cosmos-reason1-7b}
+      --prompt "Describe what you see in this image in one sentence."
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      nim:
+        condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+
+  # ============================================================================
+  # Live VLM WebUI (NIM) - Jetson Orin
+  # ============================================================================
+  live-vlm-webui-nim-jetson-orin:
+    image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin
+    container_name: live-vlm-webui
+    profiles:
+      - nim-jetson-orin
+    network_mode: host
+    privileged: true
+    command: >
+      python server.py
+      --host 0.0.0.0
+      --port 8090
+      --ssl-cert cert.pem
+      --ssl-key key.pem
+      --api-base http://localhost:8000/v1
+      --model ${NIM_MODEL_NAME:-nvidia/cosmos-reason1-7b}
+      --prompt "Describe what you see in this image in one sentence."
+    volumes:
+      - /run/jtop.sock:/run/jtop.sock:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      nim:
+        condition: service_healthy
+    runtime: nvidia
+
+  # ============================================================================
+  # Live VLM WebUI (NIM) - Jetson Thor
+  # ============================================================================
+  live-vlm-webui-nim-jetson-thor:
+    image: ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor
+    container_name: live-vlm-webui
+    profiles:
+      - nim-jetson-thor
+    network_mode: host
+    privileged: true
+    command: >
+      python server.py
+      --host 0.0.0.0
+      --port 8090
+      --ssl-cert cert.pem
+      --ssl-key key.pem
+      --api-base http://localhost:8000/v1
+      --model ${NIM_MODEL_NAME:-nvidia/cosmos-reason1-7b}
+      --prompt "Describe what you see in this image in one sentence."
+    volumes:
+      - /run/jtop.sock:/run/jtop.sock:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      nim:
         condition: service_healthy
     deploy:
       resources:
@@ -131,17 +286,17 @@ networks:
 # ==============================================================================
 # Quick Start:
 # ==============================================================================
-# 1. Start services:
-#    docker compose -f docker-compose.ollama.yml --profile live-vlm-webui-x86 up -d
+# Option 1: Ollama (Easiest)
+#   docker compose --profile ollama up -d
+#   docker exec ollama ollama pull llama3.2-vision:11b
 #
-# 2. Pull a vision model:
-#    docker exec ollama ollama pull llama3.2-vision:11b
-#    # or
-#    docker exec ollama ollama pull llava:7b
+# Option 2: NVIDIA NIM (Advanced)
+#   export NGC_API_KEY=<your-key>
+#   docker compose --profile nim up -d
 #
-# 3. Access Web UI:
-#    https://localhost:8090
+# Access Web UI: https://localhost:8090
 #
-# 4. Select model in UI and start camera!
+# Stop services:
+#   docker compose down
 # ==============================================================================
 

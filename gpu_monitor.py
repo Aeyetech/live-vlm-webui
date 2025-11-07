@@ -553,7 +553,7 @@ class AppleSiliconMonitor(GPUMonitor):
             # Override hostname to show host's hostname
             import socket
             self._hostname = os.environ.get("HOST_HOSTNAME", socket.gethostname())
-            
+
             # Extract chip type from host CPU model
             if "Apple" in cpu_brand:
                 for chip in ["M4", "M3", "M2", "M1"]:
@@ -565,18 +565,18 @@ class AppleSiliconMonitor(GPUMonitor):
                             self.chip_variant = "Max"
                         elif "Pro" in cpu_brand:
                             self.chip_variant = "Pro"
-                        
+
                         if self.chip_variant:
                             self.gpu_name = f"{chip} {self.chip_variant}"
                         else:
                             self.gpu_name = chip
                         break
-            
+
             logger.info(f"Apple Silicon detected (via Docker host): {cpu_brand}")
             logger.info(f"Host product: {self.product_name}")
             logger.info(f"Host hostname: {self._hostname}")
             self.available = True
-            
+
             # Try to get GPU cores from host (if passed)
             # For now, skip detailed detection in Docker, will add if needed
         else:

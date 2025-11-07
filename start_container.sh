@@ -15,6 +15,38 @@ echo -e "${BLUE}    Live-VLM-WebUI Docker Container Starter${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
+# ==============================================================================
+# Check Prerequisites
+# ==============================================================================
+echo -e "${YELLOW}🔍 Checking Docker installation...${NC}"
+
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Docker not found!${NC}"
+    echo ""
+    echo -e "${YELLOW}Docker is required to run this application.${NC}"
+    echo ""
+    echo -e "Install Docker:"
+    echo -e "  Linux:   ${BLUE}https://docs.docker.com/engine/install/${NC}"
+    echo -e "  Mac:     ${BLUE}https://docs.docker.com/desktop/install/mac-install/${NC}"
+    echo -e "  Windows: ${BLUE}https://docs.docker.com/desktop/install/windows-install/${NC}"
+    echo ""
+    exit 1
+fi
+
+# Check if Docker daemon is running
+if ! docker info &> /dev/null; then
+    echo -e "${RED}❌ Docker daemon is not running!${NC}"
+    echo ""
+    echo -e "${YELLOW}Start Docker:${NC}"
+    echo -e "  Linux:   ${GREEN}sudo systemctl start docker${NC}"
+    echo -e "  Mac/Win: ${GREEN}Open Docker Desktop${NC}"
+    echo ""
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Docker installed: $(docker --version)${NC}"
+echo ""
+
 # Detect architecture and OS
 ARCH=$(uname -m)
 OS=$(uname -s)
