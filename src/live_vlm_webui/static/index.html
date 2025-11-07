@@ -1369,6 +1369,18 @@
                             <input type="number" id="maxLatency" value="0" min="0" max="10.0" step="0.1" style="width: 80px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
                         </div>
                     </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">GPU Monitoring</div>
+
+                        <div class="settings-item">
+                            <div style="flex: 1; min-width: 0;">
+                                <div class="settings-item-label">Graph Update Interval (seconds)</div>
+                                <div class="settings-item-description">How often to update GPU/CPU graphs (lower = more responsive, higher = less CPU usage)</div>
+                            </div>
+                            <input type="number" id="gpuUpdateInterval" value="0.25" min="0.1" max="5.0" step="0.05" style="width: 80px; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1822,6 +1834,7 @@
         const overlayPosition = document.getElementById('overlayPosition');
         const layoutOrder = document.getElementById('layoutOrder');
         const videoOverlay = document.getElementById('videoOverlay');
+        const gpuUpdateInterval = document.getElementById('gpuUpdateInterval');
 
         // Settings state
         const settings = {
@@ -1829,7 +1842,8 @@
             glow: localStorage.getItem('glow') !== 'false',
             fade: localStorage.getItem('fade') !== 'false',
             overlayPosition: localStorage.getItem('overlayPosition') || 'none',
-            layoutOrder: localStorage.getItem('layoutOrder') || 'vlm-first'
+            layoutOrder: localStorage.getItem('layoutOrder') || 'vlm-first',
+            gpuUpdateInterval: parseFloat(localStorage.getItem('gpuUpdateInterval')) || 0.25
         };
 
         // Load saved settings
@@ -1838,6 +1852,7 @@
         fadeToggle.checked = settings.fade;
         overlayPosition.value = settings.overlayPosition;
         layoutOrder.value = settings.layoutOrder;
+        gpuUpdateInterval.value = settings.gpuUpdateInterval;
 
         // Apply overlay position
         function applyOverlayPosition(position) {
@@ -1926,6 +1941,21 @@
             settings.layoutOrder = e.target.value;
             localStorage.setItem('layoutOrder', settings.layoutOrder);
             applyLayoutOrder(settings.layoutOrder);
+        });
+
+        gpuUpdateInterval.addEventListener('change', (e) => {
+            const newInterval = parseFloat(e.target.value);
+            if (!isNaN(newInterval) && newInterval >= 0.1 && newInterval <= 5.0) {
+                settings.gpuUpdateInterval = newInterval;
+                localStorage.setItem('gpuUpdateInterval', settings.gpuUpdateInterval);
+                console.log(`🔄 GPU graph update interval changed to ${newInterval}s (updates every ${newInterval}s)`);
+                console.log(`📊 Note: Server still sends stats every 0.25s, but graphs will only redraw at the configured rate`);
+                // Reset lastGPUUpdate to allow immediate update with new interval
+                lastGPUUpdate = 0;
+            } else {
+                console.warn('Invalid GPU update interval, keeping previous value');
+                e.target.value = settings.gpuUpdateInterval;
+            }
         });
 
         // Panel Toggle
@@ -2442,8 +2472,20 @@
             return isLightTheme ? '/images/m48-workstation-256px-blk.png' : '/images/m48-workstation-256px-wht.png';
         }
 
-        // Update GPU Stats
+        // GPU Stats Throttling
+        let lastGPUUpdate = 0;
+        let pendingGPUStats = null;
+        let gpuUpdateCount = 0;
+
+        // Update GPU Stats (throttled based on settings.gpuUpdateInterval)
         function updateGPUStats(stats) {
+            // Diagnostic logging (log every 10th update to avoid console spam)
+            gpuUpdateCount++;
+            if (gpuUpdateCount % 10 === 0) {
+                const gpuPercent = stats.gpu_percent !== null && stats.gpu_percent !== undefined ? stats.gpu_percent.toFixed(1) : 'N/A';
+                console.log(`📊 GPU Update #${gpuUpdateCount}: GPU=${gpuPercent}%, VRAM=${stats.vram_used_gb?.toFixed(1)}GB, CPU=${stats.cpu_percent?.toFixed(1)}%`);
+            }
+
             // Update system info header
             const hostname = stats.hostname || 'System';
             const cpuModel = stats.cpu_model || 'Unknown CPU';
@@ -2577,6 +2619,20 @@
             }
         }
 
+        // Periodic check for pending GPU stats updates
+        setInterval(() => {
+            if (pendingGPUStats) {
+                const now = Date.now();
+                const intervalMs = settings.gpuUpdateInterval * 1000;
+
+                if (now - lastGPUUpdate >= intervalMs) {
+                    updateGPUStats(pendingGPUStats);
+                    lastGPUUpdate = now;
+                    pendingGPUStats = null;
+                }
+            }
+        }, 50);  // Check every 50ms for smooth updates
+
         // WebSocket Connection
         function connectWebSocket() {
             if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -2647,7 +2703,20 @@
                     }
                 } else if (data.type === 'gpu_stats') {
                     window.lastSystemStats = data.stats;  // Store for theme changes
-                    updateGPUStats(data.stats);
+
+                    // Throttle GPU stats updates based on configured interval
+                    const now = Date.now();
+                    const intervalMs = settings.gpuUpdateInterval * 1000;
+
+                    if (now - lastGPUUpdate >= intervalMs) {
+                        // Enough time has passed, update immediately
+                        updateGPUStats(data.stats);
+                        lastGPUUpdate = now;
+                        pendingGPUStats = null;
+                    } else {
+                        // Too soon, store for later update
+                        pendingGPUStats = data.stats;
+                    }
                 } else if (data.type === 'status') {
                     // Don't show status messages in result balloon (too flashy)
                     // Status is already shown in the header
