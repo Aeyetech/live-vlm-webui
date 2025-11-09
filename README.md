@@ -25,7 +25,33 @@ Stream your webcam to any VLM and get live AI-powered analysis - perfect for tes
 
 ## 🚀 Quick Start (Easiest Way!)
 
-**Works on PC (x86_64), DGX Spark (ARM64), Jetson Orin, and Jetson Thor** - same simple steps:
+**For PC, Mac, and DGX systems:**
+
+```bash
+pip install live-vlm-webui
+live-vlm-webui
+```
+
+**Access the WebUI:** Open **`https://localhost:8090`** in your browser
+
+> [!WARNING]
+> **PyPI package coming soon!** For now, use [Jetson Quick Start](#-jetson-quick-start) (Docker) or [Development Installation](#-development-installation-from-source) below.
+
+> [!NOTE]
+> - SSL certificates auto-generate on first run. Accept the browser warning.
+> - You'll need a VLM backend running (Ollama, vLLM, etc.). See [VLM Backend Setup](#-setting-up-your-vlm-backend) below.
+
+**Platforms supported:**
+- ✅ Linux (x86_64, ARM64)
+- ✅ macOS (Intel & Apple Silicon)
+- ✅ Windows (via WSL2)
+- ⚠️ **Not recommended for Jetson** - see [Jetson Quick Start](#-jetson-quick-start) below
+
+---
+
+## 🤖 Jetson Quick Start
+
+**For Jetson Orin & Jetson Thor, we strongly recommend Docker:**
 
 ```bash
 # 1. Clone the repository
@@ -37,28 +63,23 @@ cd live-vlm-webui
 ```
 
 That's it! The script will:
-- ✅ Auto-detect your platform (PC x86_64, Jetson Orin, or Jetson Thor)
+- ✅ Auto-detect your Jetson platform (Orin or Thor)
 - ✅ Pull the appropriate pre-built image from GitHub Container Registry
 - ✅ Configure GPU access automatically
 - ✅ Start the container with correct settings
 
 **Access the WebUI:** Open **`https://localhost:8090`** in your browser
 
-> [!NOTE]
-> You'll need a VLM backend running (Ollama, vLLM, etc.). See [VLM Backend Setup](#-setting-up-your-vlm-backend) below.
-
-### Available Pre-built Images
-
-| Platform | Image Tag | Pull Command |
-|----------|-----------|--------------|
-| **PC (x86_64) / DGX Spark** | `latest` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest` |
-| **Jetson Orin** | `latest-jetson-orin` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin` |
-| **Jetson Thor** | `latest-jetson-thor` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor` |
+**Why Docker for Jetson?**
+- ✅ No system package dependencies
+- ✅ No JetPack conflicts
+- ✅ Works out-of-the-box
+- ✅ Production-ready
 
 > [!TIP]
-> The `latest` tag is a **multi-arch image** that automatically selects the correct architecture:
-> - `linux/amd64` for x86_64 PC and DGX systems
-> - `linux/arm64` for DGX Spark (ARM64 SBSA server)
+> The pip package works on Jetson but requires additional setup:
+> `sudo apt install python3.10-venv` and manual pip upgrades.
+> Docker is significantly easier!
 
 ---
 
@@ -128,9 +149,9 @@ Once the server is running, access the web interface at **`https://localhost:809
 
 ---
 
-## 💻 Local Installation (Versatile, Works on Mac)
+## 💻 Development Installation (From Source)
 
-**For developers who want full control and customization:**
+**For developers, contributors, and those who want full control:**
 
 ```bash
 # 1. Clone the repository
@@ -141,25 +162,33 @@ cd live-vlm-webui
 python3 -m venv .venv
 source .venv/bin/activate
 
-# 3. Install the package in editable mode
+# 3. Upgrade pip and install in editable mode
+pip install --upgrade pip setuptools wheel
 pip install -e .
 
-# 4. Generate SSL certificates
-./scripts/generate_cert.sh
-
-# 5. Start the server
+# 4. Start the server (SSL certs auto-generate)
 ./scripts/start_server.sh
 ```
 
 **Access the WebUI:** Open **`https://localhost:8090`**
 
-**Platforms supported:**
+**Benefits of source installation:**
+- ✅ Make code changes that take effect immediately (editable install)
+- ✅ Access to development tools and scripts
+- ✅ Works on macOS (unlike Docker which doesn't support webcam)
+- ✅ Full debugging capabilities
+
+**Platforms tested:**
 - ✅ Linux (x86_64) - fully tested
-- ✅ DGX Spark - fully tested
+- ✅ DGX Spark (ARM64) - fully tested
 - ✅ Jetson Thor - fully tested
-- ✅ Jetson Orin - Tested on Jetson AGX Orin Developer Kit
+- ✅ Jetson Orin - fully tested
 - ✅ macOS (Apple Silicon) - fully tested
-- ⚠️ Windows - WSL2 recommended, native Windows possible but requires additional setup (FFmpeg, build tools)
+- ⚠️ Windows - WSL2 recommended, native Windows requires additional setup (FFmpeg, build tools)
+
+> [!TIP]
+> For Jetson, we recommend Docker for production use. Source installation works but requires:
+> `sudo apt install python3.10-venv` and careful pip management to avoid JetPack conflicts.
 
 ---
 
@@ -220,7 +249,45 @@ python -m vllm.entrypoints.openai.api_server \
 
 ---
 
-## 🐳 Quick Deploy: Docker Compose with VLM Backend
+## 🔧 Alternative Installation Methods
+
+### Docker (Recommended for Production & Jetson)
+
+**For PC, DGX Spark, and Jetson users who want containerized deployment:**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/nvidia-ai-iot/live-vlm-webui.git
+cd live-vlm-webui
+
+# 2. Run the auto-detection script
+./scripts/start_container.sh
+```
+
+**Benefits:**
+- ✅ No dependency management
+- ✅ Isolated environment
+- ✅ Works across all platforms (x86_64, ARM64, Jetson)
+- ✅ Production-ready
+
+**Available pre-built images:**
+
+| Platform | Image Tag | Pull Command |
+|----------|-----------|--------------|
+| **PC (x86_64) / DGX Spark** | `latest` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest` |
+| **Jetson Orin** | `latest-jetson-orin` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-orin` |
+| **Jetson Thor** | `latest-jetson-thor` | `docker pull ghcr.io/nvidia-ai-iot/live-vlm-webui:latest-jetson-thor` |
+
+> [!TIP]
+> The `latest` tag is a **multi-arch image** that automatically selects the correct architecture:
+> - `linux/amd64` for x86_64 PC and DGX systems
+> - `linux/arm64` for DGX Spark (ARM64 SBSA server)
+
+**📗 Detailed Guide:** [Manual Docker Setup](./docs/setup/docker-manual.md)
+
+---
+
+### Docker Compose (Complete Stack with VLM Backend)
 
 **For PC and DGX Spark users who want VLM + WebUI in one command:**
 
@@ -363,61 +430,6 @@ Includes:
 - Increase Frame Processing Interval (60+ frames)
 - Reduce Max Tokens (50-100 instead of 512)
 
-## 🔧 Other Ways to Set Up
-
-### Option 1: Docker Compose (Complete Stack)
-
-For launching the WebUI alongside a VLM backend (Ollama or NVIDIA NIM) in a single stack:
-
-**Using the launcher script (recommended):**
-```bash
-# Ollama (easy, no API keys)
-./scripts/start_docker_compose.sh ollama
-
-# NVIDIA NIM (advanced, requires NGC API key)
-export NGC_API_KEY=<your-key>
-./scripts/start_docker_compose.sh nim
-```
-
-**Manual docker compose:**
-```bash
-# Ollama
-docker compose --profile ollama up
-
-# NVIDIA NIM
-export NGC_API_KEY=<your-key>
-docker compose --profile nim up
-```
-
-**📗 Full Guide:** [Docker Compose Details](./docs/setup/docker-compose-details.md) - Includes NIM model selection, troubleshooting, and platform-specific instructions.
-
-### Option 2: Manual Docker Run
-
-For more control over Docker configurations, see [Manual Docker Setup](./docs/setup/docker-manual.md).
-
-### Option 3: Local Installation (Most Flexible)
-
-For development or custom setups, install directly without Docker:
-
-**Requirements:**
-- Python 3.10+
-- NVIDIA GPU with CUDA support (for GPU monitoring)
-- FFmpeg (for video processing)
-
-**Quick setup:**
-```bash
-git clone https://github.com/nvidia-ai-iot/live-vlm-webui.git
-cd live-vlm-webui
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-./scripts/generate_cert.sh
-./scripts/start_server.sh
-```
-
-**📗 See:** Full instructions above in [Quick Start → Option 2: Local Installation](#option-2-local-installation-versatile-works-on-mac)
-
----
 
 ## 🤝 Contributing
 
