@@ -606,16 +606,33 @@ def generate_self_signed_cert(cert_path="cert.pem", key_path="key.pem"):
 
     logger.info("🔐 Generating self-signed SSL certificate...")
     try:
-        subprocess.run([
-            "openssl", "req", "-x509", "-newkey", "rsa:4096", "-nodes",
-            "-out", cert_path, "-keyout", key_path, "-days", "365",
-            "-subj", "/CN=localhost"
-        ], check=True, capture_output=True)
+        subprocess.run(
+            [
+                "openssl",
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:4096",
+                "-nodes",
+                "-out",
+                cert_path,
+                "-keyout",
+                key_path,
+                "-days",
+                "365",
+                "-subj",
+                "/CN=localhost",
+            ],
+            check=True,
+            capture_output=True,
+        )
         logger.info(f"✅ Generated {cert_path} and {key_path}")
         return True
     except FileNotFoundError:
         logger.warning("⚠️  openssl not found - cannot auto-generate certificates")
-        logger.warning("⚠️  Install openssl: sudo apt install openssl (Linux) or brew install openssl (Mac)")
+        logger.warning(
+            "⚠️  Install openssl: sudo apt install openssl (Linux) or brew install openssl (Mac)"
+        )
         return False
     except subprocess.CalledProcessError as e:
         logger.warning(f"⚠️  Failed to generate certificates: {e}")
@@ -660,9 +677,21 @@ def main():
         help="Prompt to send to VLM (default: 'Describe what you see...')",
     )
     parser.add_argument("--process-every", type=int, default=30, help="Process every Nth frame")
-    parser.add_argument("--ssl-cert", default="cert.pem", help="Path to SSL certificate file (default: cert.pem, auto-generated if missing)")
-    parser.add_argument("--ssl-key", default="key.pem", help="Path to SSL private key file (default: key.pem, auto-generated if missing)")
-    parser.add_argument("--no-ssl", action="store_true", help="Disable SSL (not recommended - webcam requires HTTPS)")
+    parser.add_argument(
+        "--ssl-cert",
+        default="cert.pem",
+        help="Path to SSL certificate file (default: cert.pem, auto-generated if missing)",
+    )
+    parser.add_argument(
+        "--ssl-key",
+        default="key.pem",
+        help="Path to SSL private key file (default: key.pem, auto-generated if missing)",
+    )
+    parser.add_argument(
+        "--no-ssl",
+        action="store_true",
+        help="Disable SSL (not recommended - webcam requires HTTPS)",
+    )
 
     args = parser.parse_args()
 
@@ -718,6 +747,7 @@ def main():
     if not args.no_ssl:
         # Try to auto-generate if certificates don't exist
         import os
+
         if not os.path.exists(args.ssl_cert) or not os.path.exists(args.ssl_key):
             generate_self_signed_cert(args.ssl_cert, args.ssl_key)
 
@@ -730,7 +760,9 @@ def main():
         else:
             logger.warning("⚠️  SSL certificates not found and could not be generated")
             logger.warning("⚠️  Webcam access requires HTTPS!")
-            logger.warning("⚠️  Install openssl or generate manually with: openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365 -subj '/CN=localhost'")
+            logger.warning(
+                "⚠️  Install openssl or generate manually with: openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365 -subj '/CN=localhost'"
+            )
     else:
         logger.warning("⚠️  SSL disabled - webcam access requires HTTPS!")
 
