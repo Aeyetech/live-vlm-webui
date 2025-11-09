@@ -87,22 +87,54 @@ sudo apt install python3-pip
 **Solutions:**
 
 **Option 1: pip install (Recommended for Development)**
+
+**For Jetson Orin (JetPack 6.x / Python 3.10):**
 ```bash
-# Install openssl if not already present
-sudo apt install openssl
+# Install dependencies
+sudo apt install openssl python3-pip
 
-# Install the package (use python3 -m pip for reliability)
-python3 -m pip install live-vlm-webui
+# Install jetson-stats for GPU monitoring (optional but recommended)
+sudo pip3 install -U jetson-stats
 
-# Run it
-python3 -m live_vlm_webui.server
+# Install the package
+python3 -m pip install --user live-vlm-webui
 
-# Optional: Add to PATH for shorter command
-export PATH="$HOME/.local/bin:$PATH"
+# Add to PATH (one-time setup)
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
+
+# Run it
 live-vlm-webui
 ```
+
+**For Jetson Thor (r38.2+ / Python 3.12):**
+```bash
+# Install dependencies
+sudo apt install openssl pipx
+
+# Ensure PATH for pipx
+pipx ensurepath
+source ~/.bashrc
+
+# Install the package using pipx (required for Python 3.12)
+pipx install live-vlm-webui
+
+# Install jetson-stats for GPU monitoring (from GitHub - PyPI version doesn't support Thor yet)
+# Step 1: Install system-wide for the jtop service
+sudo pip3 install --break-system-packages git+https://github.com/rbonghi/jetson_stats.git
+sudo jtop --install-service
+
+# Step 2: Inject into pipx environment so live-vlm-webui can use it
+pipx inject live-vlm-webui git+https://github.com/rbonghi/jetson_stats.git
+
+# Step 3: Reboot for jtop service permissions to take effect
+sudo reboot
+
+# After reboot, run it
+live-vlm-webui
+```
+
+**Note:** Thor support for jetson-stats is available on GitHub but not yet released to PyPI. Two installations are needed: system-wide for the service, and in the pipx environment for the app to access it.
 
 **Option 2: Docker (Recommended for Production)**
 - See [Jetson Quick Start](../README.md#-jetson-quick-start) in the main README
@@ -168,6 +200,110 @@ ERROR: Package 'live-vlm-webui' requires a different Python: 3.8.10 not in '>=3.
    ```
 
 **Why Python 3.10+?** The project uses modern Python features and dependencies (like `match` statements, typing improvements) that require Python 3.10 or newer.
+
+---
+
+### "externally-managed-environment" error (Jetson Thor)
+
+**Issue:** On Jetson Thor (r38.2+ with Python 3.12), pip install fails with:
+```
+error: externally-managed-environment
+× This environment is externally managed
+```
+
+**Cause:** Python 3.12 includes PEP 668 protection to prevent breaking system packages.
+
+**Solution: Use pipx (recommended for Thor):**
+```bash
+# Install pipx first (one-time)
+sudo apt install pipx
+pipx ensurepath
+source ~/.bashrc
+
+# Install the app (pipx manages everything automatically)
+pipx install live-vlm-webui
+
+# Run it
+live-vlm-webui
+```
+
+**Alternative: Use a virtual environment:**
+```bash
+# Create a venv
+python3 -m venv ~/live-vlm-venv
+source ~/live-vlm-venv/bin/activate
+
+# Install normally
+pip install live-vlm-webui
+
+# Run it
+live-vlm-webui
+```
+
+**Why not `--user` or `--break-system-packages`?**
+- ⚠️ `--user` still triggers PEP 668 protection on Thor's Python 3.12
+- ⚠️ `--break-system-packages` can damage your system's Python environment
+
+**Why pipx is best:** It's designed exactly for this - installing Python CLI applications globally while keeping them isolated. The Python error message even recommends it!
+
+---
+
+### jetson-stats issues on Thor
+
+**Issue 1: Not supported on Thor**
+```
+[WARN] jetson-stats not supported for [L4T 38.2.0]
+```
+
+**Issue 2: Version mismatch**
+```
+Mismatch version jtop service: [4.3.2] and client: [4.5.2]
+```
+
+**Issue 3: Can't access jtop.service**
+```
+I can't access jtop.service. Please logout or reboot this board.
+```
+
+**Complete Solution:**
+
+```bash
+# Step 1: Uninstall old version if installed
+sudo pip3 uninstall -y jetson-stats
+
+# Step 2: Install latest from GitHub (has Thor support)
+sudo pip3 install --break-system-packages git+https://github.com/rbonghi/jetson_stats.git
+
+# Step 3: Install/update the jtop service
+sudo jtop --install-service
+
+# Step 4: If using pipx for live-vlm-webui, inject jetson-stats
+pipx inject live-vlm-webui git+https://github.com/rbonghi/jetson_stats.git
+
+# Step 5: Reboot for permissions to take effect
+sudo reboot
+
+# After reboot, test it
+sudo jtop
+```
+
+**Alternative to reboot (logout/login):**
+```bash
+# Add user to jtop group
+sudo usermod -a -G jtop $USER
+
+# Then logout and login, or force new group:
+newgrp jtop
+
+# Verify socket permissions
+ls -l /run/jtop.sock
+```
+
+**Why these steps?**
+- **GitHub install:** PyPI version doesn't support Thor yet
+- **--install-service:** Updates systemd service to match client version
+- **pipx inject:** Allows pipx-isolated app to access jetson-stats
+- **Reboot/logout:** Sets up socket permissions for jtop service access
 
 ---
 

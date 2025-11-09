@@ -51,50 +51,19 @@ live-vlm-webui
 - ✅ Linux (x86_64, ARM64)
 - ✅ macOS (Intel & Apple Silicon)
 - ✅ Windows (via WSL2)
-- ✅ **Jetson (Orin, Thor)** - pip works! See [Jetson Quick Start](#-jetson-quick-start) for details
+- ⚠️ **Jetson (Orin, Thor)** - pip works but Docker is simpler. See [Jetson Quick Start](#-jetson-quick-start) below
 
 ---
 
 ## 🤖 Jetson Quick Start
 
 > [!IMPORTANT]
-> **Requires JetPack 6.x** (Python 3.10+). JetPack 5.x has Python 3.8 which is not supported.
-> If on JetPack 5.x, use [Docker](#option-2-docker-recommended-for-production) or upgrade to JetPack 6.
+> **Requires JetPack 6.x** (Python 3.10+) or **JetPack 7.0** (Python 3.12).
+> JetPack 5.x has Python 3.8 which is not supported - use Docker or upgrade.
 
-### Option 1: pip install (Simplest for Development)
+### Option 1: Docker (Recommended - Works Out of the Box)
 
-**For Jetson Orin & Jetson Thor with JetPack 6:**
-
-```bash
-# Check if openssl is installed (usually is)
-which openssl
-
-# If not installed:
-sudo apt install openssl
-
-# Install the package (use python3 -m pip for reliability)
-python3 -m pip install live-vlm-webui
-
-# Run it
-python3 -m live_vlm_webui.server
-
-# OR add to PATH and use the command directly:
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-live-vlm-webui
-```
-
-**Access the WebUI:** Open **`https://localhost:8090`** in your browser
-
-**Benefits:**
-- ✅ Quick installation
-- ✅ Easy for development and testing
-- ✅ Direct access to logs and debugging
-- ✅ No container overhead
-
-### Option 2: Docker (Recommended for Production)
-
-**For production deployments:**
+**For all Jetson platforms (Orin, Thor):**
 
 ```bash
 # Clone the repository
@@ -111,11 +80,92 @@ The script will:
 - ✅ Configure GPU access automatically
 - ✅ Start the container with correct settings
 
-**Why Docker for production?**
-- ✅ Isolated environment
-- ✅ No system package dependencies
-- ✅ Reproducible deployments
-- ✅ No JetPack conflicts
+**Why Docker is recommended:**
+- ✅ Works immediately - no platform-specific setup
+- ✅ Isolated environment - no system package conflicts
+- ✅ Full GPU monitoring included
+- ✅ Production-ready
+- ✅ No Python version conflicts
+
+**Access the WebUI:** Open **`https://localhost:8090`** in your browser
+
+---
+
+### Option 2: pip install (Advanced)
+
+**For Jetson Orin (JetPack 6.x / r36.x):**
+
+```bash
+# Install dependencies
+sudo apt install openssl python3-pip
+
+# Install jetson-stats for GPU monitoring (optional but recommended)
+# Note: Use --break-system-packages if on newer JetPack with Python 3.12
+sudo pip3 install -U jetson-stats
+
+# Install the package
+python3 -m pip install --user live-vlm-webui
+
+# Add to PATH (one-time setup)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Run it
+live-vlm-webui
+```
+
+**For Jetson Thor (JetPack 7.0 / r38.2+):**
+
+```bash
+# Install dependencies
+sudo apt install openssl pipx
+
+# Ensure PATH for pipx
+pipx ensurepath
+source ~/.bashrc
+
+# Install the package using pipx (required for Python 3.12)
+pipx install live-vlm-webui
+
+# Install jetson-stats for GPU monitoring (from GitHub - PyPI version doesn't support Thor yet)
+# Step 1: Install system-wide for the jtop service
+sudo pip3 install --break-system-packages git+https://github.com/rbonghi/jetson_stats.git
+sudo jtop --install-service
+
+# Step 2: Inject into pipx environment so live-vlm-webui can use it
+pipx inject live-vlm-webui git+https://github.com/rbonghi/jetson_stats.git
+
+# Step 3: Reboot for jtop service permissions to take effect
+sudo reboot
+
+# After reboot, run it
+live-vlm-webui
+```
+
+> [!NOTE]
+> **Jetson Thor GPU Monitoring:** Thor support is in the latest jetson-stats on GitHub but not yet released to PyPI.
+>
+> **Why two installations?**
+> 1. System-wide (`sudo pip3`) - Runs the jtop background service
+> 2. Pipx environment (`pipx inject`) - Allows live-vlm-webui to access jtop data
+>
+> The reboot ensures proper socket permissions for jtop access.
+
+> [!TIP]
+> **Jetson Thor (Python 3.12):** Use `pipx` instead of `pip` due to PEP 668 protection.
+> pipx automatically creates isolated environments for applications.
+>
+> **GPU Monitoring:** Installing `jetson-stats` enables proper hardware detection and GPU/VRAM monitoring.
+
+**Access the WebUI:** Open **`https://localhost:8090`** in your browser
+
+**Benefits of pip install:**
+- ✅ Editable code for development
+- ✅ Direct access to logs and debugging
+- ✅ No container overhead
+- ✅ Fine-grained control
+
+**Note:** pip installation requires platform-specific setup steps. For production or simpler setup, use Docker (Option 1).
 
 ---
 
