@@ -604,6 +604,28 @@ async def create_app(test_mode=False):
     return app
 
 
+def get_app_config_dir():
+    """Get the application config directory following OS conventions"""
+    import os
+    from pathlib import Path
+
+    # Follow XDG Base Directory spec on Linux, use OS-appropriate paths elsewhere
+    if os.name == "posix":
+        if "darwin" in os.sys.platform.lower():
+            # macOS
+            config_dir = Path.home() / "Library" / "Application Support" / "live-vlm-webui"
+        else:
+            # Linux/Unix (including Jetson)
+            config_dir = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "live-vlm-webui"
+    else:
+        # Windows
+        config_dir = Path(os.environ.get("APPDATA", Path.home())) / "live-vlm-webui"
+
+    # Create directory if it doesn't exist
+    config_dir.mkdir(parents=True, exist_ok=True)
+    return config_dir
+
+
 def generate_self_signed_cert(cert_path="cert.pem", key_path="key.pem"):
     """Generate a self-signed SSL certificate if it doesn't exist"""
     import subprocess
@@ -613,6 +635,7 @@ def generate_self_signed_cert(cert_path="cert.pem", key_path="key.pem"):
         return True
 
     logger.info("🔐 Generating self-signed SSL certificate...")
+    logger.info(f"   Saving to: {os.path.dirname(os.path.abspath(cert_path)) or '.'}")
     try:
         subprocess.run(
             [
@@ -684,16 +707,21 @@ def main():
         default="Describe what you see in this image in one sentence.",
         help="Prompt to send to VLM (default: 'Describe what you see...')",
     )
+    # Get default SSL cert paths (platform-specific)
+    default_config_dir = get_app_config_dir()
+    default_cert_path = str(default_config_dir / "cert.pem")
+    default_key_path = str(default_config_dir / "key.pem")
+
     parser.add_argument("--process-every", type=int, default=30, help="Process every Nth frame")
     parser.add_argument(
         "--ssl-cert",
-        default="cert.pem",
-        help="Path to SSL certificate file (default: cert.pem, auto-generated if missing)",
+        default=None,  # Will be set to config dir if not specified
+        help=f"Path to SSL certificate file (default: {default_cert_path}, auto-generated if missing)",
     )
     parser.add_argument(
         "--ssl-key",
-        default="key.pem",
-        help="Path to SSL private key file (default: key.pem, auto-generated if missing)",
+        default=None,  # Will be set to config dir if not specified
+        help=f"Path to SSL private key file (default: {default_key_path}, auto-generated if missing)",
     )
     parser.add_argument(
         "--no-ssl",
@@ -702,6 +730,14 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Set default SSL cert paths to config directory if not specified
+    if args.ssl_cert is None:
+        config_dir = get_app_config_dir()
+        args.ssl_cert = str(config_dir / "cert.pem")
+    if args.ssl_key is None:
+        config_dir = get_app_config_dir()
+        args.ssl_key = str(config_dir / "key.pem")
 
     # Auto-detect service and model if not specified
     api_base = args.api_base
