@@ -11,7 +11,11 @@
 
 Stream your webcam to any VLM and get live AI-powered analysis - perfect for testing models, benchmarking performance, and exploring vision AI capabilities across multiple domains and hardware platforms.
 
-![Live VLM WebUI Screenshot](./docs/images/chrome_app_running.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/chrome_app-running_dark-theme.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/chrome_app-running_light-theme.jpg">
+  <img alt="Chrome running Live VLM WebUI" src="docs/images/chrome_the-lab_light-theme.png">
+</picture>
 
 > [!TIP]
 > **⭐ If you find this project useful, please consider giving it a star!** It helps others discover this tool and motivates us to keep improving it. Thank you for your support! 🙏
