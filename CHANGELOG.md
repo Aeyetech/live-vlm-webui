@@ -8,7 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Nothing yet - this is the first release!
+- Nothing yet
+
+---
+
+## [0.1.1] - 2025-11-12
+
+**Bug Fixes and Documentation Improvements**
+
+### Fixed
+- **WSL2 GPU monitoring resilience**: Added robust error handling for intermittent NVML GPU access issues in WSL2 environments
+  - Prevents crashes when GPU temporarily unavailable
+  - Gracefully falls back when GPU access is lost
+  - Improves reliability on Windows Subsystem for Linux
+
+### Added
+- **Comprehensive VLM documentation**: Complete model catalog with verified NVIDIA API models
+  - Added `docs/usage/list-of-vlms.md` with 16 verified NVIDIA API Catalog models
+  - Corrected vision capabilities for gemma3 and llava models
+  - Detailed guidance on text-only vs vision-capable models
+  - Examples and troubleshooting for common model selection issues
+
+### Documentation
+- Added Windows WSL usage guide (`docs/usage/windows-wsl.md`)
+- Updated TODO tracker with v0.1.1 status
+- Improved troubleshooting documentation
 
 ---
 
@@ -218,6 +242,6 @@ This is the initial public release of Live VLM WebUI - a real-time vision langua
 
 ---
 
-[Unreleased]: https://github.com/NVIDIA-AI-IOT/live-vlm-webui/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/NVIDIA-AI-IOT/live-vlm-webui/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/NVIDIA-AI-IOT/live-vlm-webui/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/NVIDIA-AI-IOT/live-vlm-webui/releases/tag/v0.1.0
-
