@@ -1,6 +1,6 @@
 # TODO Tracker for live-vlm-webui
 
-**Last Updated:** 2025-11-09 (Pre v0.1.0 PyPI release)
+**Last Updated:** 2025-11-12 (Post v0.1.0, preparing v0.1.1)
 
 This document consolidates all TODO items from across the codebase, categorized by priority and status.
 
@@ -43,6 +43,11 @@ All blocking items for v0.1.0 have been completed:
 
 ## 🔧 v0.1.1 Improvements (Future Release)
 
+### Completed for v0.1.1
+
+- ✅ **WSL2 GPU monitoring fix** (`ec277db`) - Resilient NVML error handling for intermittent WSL2 GPU access issues
+- ✅ **Comprehensive VLM documentation** (`64ec81e`) - Complete model catalog with 16 verified NVIDIA API models, corrected vision capabilities for gemma3/llava
+
 ### Release Process Improvements
 
 - [ ] **Add versioned Docker image tags via git tags**
@@ -83,6 +88,35 @@ All blocking items for v0.1.0 have been completed:
   - Add new platform-specific issues as discovered
 
 ### Features & Enhancements
+
+- [ ] **Markdown rendering in VLM output** (UI/UX - MEDIUM PRIORITY)
+  - **Current state**: VLM responses display as plain text, raw markdown shown
+  - **Issue**: Many VLMs output markdown formatting (bold, lists, code blocks, tables, etc.)
+    - Example: gemma3:4b can output markdown formatted responses
+    - Raw markdown like `**bold**` or `- bullet` is shown literally
+  - **Goal**: Render markdown in VLM output balloon for better readability
+  - **Implementation**:
+    - Add markdown renderer library (e.g., marked.js, markdown-it)
+    - Render VLM response HTML from markdown
+    - Preserve formatting: bold, italic, lists, code blocks, tables
+    - Apply appropriate CSS styling to match UI theme
+    - Add toggle option: "Render Markdown" vs "Show Raw Text"
+  - **Benefits**:
+    - Much better readability for formatted responses
+    - Leverage VLM's ability to structure output
+    - Code blocks rendered with syntax highlighting
+    - Tables displayed properly (useful for data analysis responses)
+  - **Considerations**:
+    - Sanitize HTML to prevent XSS attacks
+    - Handle edge cases where VLM outputs partial/broken markdown
+    - Maintain performance (render on-the-fly as text streams in)
+    - Option to copy raw markdown text for external use
+  - **UI changes**:
+    - Add "Markdown" toggle button in settings or output area
+    - Visual indicator when markdown mode is active
+    - Fallback to plain text if markdown parsing fails
+  - Priority: Medium (nice quality-of-life improvement, enhances VLM output usability)
+  - Effort: ~4-6 hours (add library, implement rendering, styling, testing)
 
 - [ ] **Jetson GPU stats without jtop dependency** (Platform Support - HIGH PRIORITY)
   - **Current issue**: jtop (jetson-stats) requirement complicates pip wheel installation
@@ -298,7 +332,24 @@ All blocking items for v0.1.0 have been completed:
     - Solution: Install Ollama inside WSL instead
   - 📝 **Documentation:** Created comprehensive guide at `docs/usage/windows-wsl.md`
   - 🐛 **Code fix:** `src/live_vlm_webui/gpu_monitor.py` - resilient error handling
+  - 📦 **Commit:** `ec277db` - Fix WSL2 GPU monitoring with resilient NVML error handling
   - Priority: Complete and fixed for v0.1.1
+
+- [x] **Comprehensive VLM reference documentation** (Documentation)
+  - ✅ **Created:** Complete VLM catalog at `docs/usage/list-of-vlms.md`
+  - ✅ **Ollama:** 14+ vision models with size recommendations by hardware
+  - ✅ **NVIDIA API:** 16 vision models verified from live API query
+    - Includes Google gemma-3 models (4b/12b/27b with vision support)
+  - ✅ **OpenAI:** Added GPT-5 (released August 2025), updated model hierarchy
+  - ✅ **Anthropic:** Claude 3.5 Sonnet and family
+  - ✅ **Corrections:** Fixed vision capability documentation
+    - gemma3: Only 4b/12b/27b support vision (270m/1b are text-only)
+    - llava: Only 7b/13b support vision (34b is text-only)
+  - ✅ **Cross-references:** Added links from README and troubleshooting docs
+  - ✅ **Model selection guides:** By use case, hardware, and deployment environment
+  - ✅ **Verification guide:** How to distinguish vision vs text-only models
+  - 📦 **Commit:** `64ec81e` - Add comprehensive VLM reference guide with verified model lists
+  - Priority: Complete and ready for v0.1.1
 
 ### Testing
 
