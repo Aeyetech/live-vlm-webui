@@ -622,9 +622,25 @@ limitations under the License.
             border-bottom: 2px solid var(--border-color);
         }
 
+        /* Beta Badge - Small and Rotated */
+        .beta-badge {
+            display: inline-block;
+            background: var(--warning-color);
+            color: #000;
+            font-size: 6px;
+            font-weight: 700;
+            padding: 1px 1px;
+            border-radius: 2px;
+            margin-left: 1px;
+            vertical-align: super;
+            letter-spacing: 0.3px;
+            transform: rotate(50deg);
+            transform-origin: center;
+        }
+
         .input-source-tab {
             flex: 1;
-            padding: 10px 16px;
+            padding: 10px 2px;
             background: transparent;
             border: none;
             border-bottom: 2px solid transparent;
@@ -1655,9 +1671,10 @@ limitations under the License.
                             <i data-lucide="video" style="width: 14px; height: 14px; margin-right: 4px;"></i>
                             Webcam
                         </button>
-                        <button class="input-source-tab" data-source="rtsp">
+                        <button class="input-source-tab" data-source="rtsp" title="RTSP IP Camera (Beta - Tested with Reolink RLC-811A)">
                             <i data-lucide="cast" style="width: 14px; height: 14px; margin-right: 4px;"></i>
                             RTSP Stream
+                            <span class="beta-badge">BETA</span>
                         </button>
                     </div>
 
@@ -1703,6 +1720,11 @@ limitations under the License.
                             <i data-lucide="square" style="width: 14px; height: 14px; margin-right: 4px;"></i>
                             Stop
                         </button>
+                        <!-- RTSP Beta Warning (shown only when RTSP tab is active) -->
+                        <div id="rtspBetaWarning" class="input-hint" style="margin-top: 12px; color: var(--warning-color); display: none; align-items: center; gap: 4px;">
+                            <i data-lucide="flask" style="width: 12px; height: 12px;"></i>
+                            <span><strong>Beta:</strong> Tested with Reolink RLC-811A. Other cameras may work. <a href="https://github.com/NVIDIA-AI-IOT/live-vlm-webui/blob/main/docs/usage/rtsp-ip-cameras.md" target="_blank" style="color: var(--warning-color); text-decoration: underline;">Learn more</a></span>
+                        </div>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label>Frame Processing Interval</label>
@@ -2007,6 +2029,7 @@ limitations under the License.
                 const source = tab.getAttribute('data-source');
                 const webcamControls = document.getElementById('webcamControls');
                 const rtspControls = document.getElementById('rtspControls');
+                const rtspBetaWarning = document.getElementById('rtspBetaWarning');
                 const startBtn = document.getElementById('startBtn');
 
                 // Update active tab
@@ -2017,11 +2040,13 @@ limitations under the License.
                 if (source === 'webcam') {
                     webcamControls.style.display = 'block';
                     rtspControls.style.display = 'none';
+                    rtspBetaWarning.style.display = 'none';
                     startBtn.innerHTML = '<i data-lucide="play" style="width: 14px; height: 14px; margin-right: 4px;"></i>Open Camera and<br>Start VLM Analysis';
                     lucide.createIcons();
                 } else if (source === 'rtsp') {
                     webcamControls.style.display = 'none';
                     rtspControls.style.display = 'block';
+                    rtspBetaWarning.style.display = 'flex';
                     startBtn.innerHTML = '<i data-lucide="play" style="width: 14px; height: 14px; margin-right: 4px;"></i>Connect to Stream and<br>Start VLM Analysis';
                     lucide.createIcons();
                 }
