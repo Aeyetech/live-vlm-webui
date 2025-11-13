@@ -12,6 +12,7 @@ This document tracks active TODO items for upcoming releases.
 - Docker version picker
 - RTSP streaming support (beta)
 - ✅ Honor OS dark/light mode preference (COMPLETED)
+- ✅ Markdown rendering in VLM output (COMPLETED)
 - Display detailed VLM inference metrics
 - Small UI/UX improvements
 
@@ -100,20 +101,24 @@ This document tracks active TODO items for upcoming releases.
   - **Note**: Ollama API provides rich metrics; vLLM/other backends may not
   - Effort: ~4-6 hours
 
-- [ ] **Markdown rendering in VLM output** (MEDIUM PRIORITY)
-  - **Current state**: VLM responses display as plain text, raw markdown shown
-  - **Issue**: Many VLMs output markdown formatting (bold, lists, code blocks, tables)
-  - **Goal**: Render markdown in VLM output for better readability
+- [x] **Markdown rendering in VLM output** ✅ **COMPLETED**
   - **Implementation**:
-    - Add markdown renderer library (e.g., marked.js, markdown-it)
-    - Render VLM response HTML from markdown
-    - Sanitize HTML to prevent XSS attacks
-    - Add toggle option: "Render Markdown" vs "Show Raw Text"
+    - ✅ Added marked.js (v12.0.0) and DOMPurify (v3.0.8) libraries
+    - ✅ Toggle button embedded in top-right corner of result balloon
+    - ✅ Render VLM response HTML from markdown with sanitization
+    - ✅ Toggle between "Markdown" and "Plain Text" modes
+    - ✅ Markdown enabled by default
+    - ✅ Supports: headers, lists, code blocks, tables, blockquotes, links, bold, italic
+    - ✅ Button persists during streaming updates
+    - ✅ Theme-aware styling for all markdown elements
+    - ✅ Copy to clipboard button in lower-right corner with transparent overlay style
   - **Benefits**:
     - Better readability for formatted responses
-    - Code blocks with syntax highlighting
-    - Tables displayed properly
-  - Effort: ~4-6 hours
+    - Code blocks properly styled
+    - Tables displayed with alternating row colors
+    - All markdown elements styled to match UI theme
+    - Easy copy functionality for sharing results
+  - **Files modified**: `src/live_vlm_webui/static/index.html`
 
 ### Documentation
 

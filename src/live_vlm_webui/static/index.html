@@ -956,6 +956,241 @@ limitations under the License.
             border-radius: 16px 16px 16px 4px;
             max-width: 90%;
             word-wrap: break-word;
+            position: relative; /* For absolute positioning of button */
+        }
+
+        .result-text-content {
+            /* Content wrapper - this is what gets updated, not the parent */
+            width: 100%;
+        }
+
+        /* Embedded markdown toggle button */
+        .markdown-toggle-embedded {
+            position: absolute;
+            top: -1px; /* Overlap balloon's top border */
+            right: -1px; /* Overlap balloon's right border */
+            background: var(--bg-secondary);
+            border-top: 1px solid rgba(118, 185, 71, 0.3);
+            border-right: 1px solid rgba(118, 185, 71, 0.3);
+            border-left: 1px solid rgba(118, 185, 71, 0.3);
+            border-bottom: 1px solid rgba(118, 185, 71, 0.3);
+            border-radius: 0 16px 0 0; /* Match top-right corner of balloon */
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            z-index: 10;
+            line-height: 1.2;
+        }
+
+        .markdown-toggle-embedded:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .markdown-toggle-embedded .lucide {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Copy to clipboard button - overlay style in lower right */
+        .copy-button-embedded {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 6px 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+            opacity: 0.6;
+        }
+
+        .copy-button-embedded:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .copy-button-embedded:active {
+            transform: scale(0.95);
+        }
+
+        .copy-button-embedded .lucide {
+            width: 14px;
+            height: 14px;
+        }
+
+        .copy-button-embedded.copied {
+            background: rgba(118, 185, 0, 0.6);
+            border-color: rgba(118, 185, 0, 0.4);
+        }
+
+        .copy-button-embedded.copied .lucide {
+            animation: checkmark 0.3s ease;
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Markdown styling */
+        .result-text-content.markdown-rendered h1,
+        .result-text-content.markdown-rendered h2,
+        .result-text-content.markdown-rendered h3,
+        .result-text.markdown-rendered h1,
+        .result-text.markdown-rendered h2,
+        .result-text.markdown-rendered h3 {
+            color: var(--text-primary);
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-text-content.markdown-rendered h1,
+        .result-text.markdown-rendered h1 {
+            font-size: 1.5em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .result-text-content.markdown-rendered h2,
+        .result-text.markdown-rendered h2 {
+            font-size: 1.3em;
+        }
+
+        .result-text-content.markdown-rendered h3,
+        .result-text.markdown-rendered h3 {
+            font-size: 1.1em;
+        }
+
+        .result-text-content.markdown-rendered p,
+        .result-text.markdown-rendered p {
+            margin: 8px 0;
+        }
+
+        .result-text-content.markdown-rendered ul,
+        .result-text-content.markdown-rendered ol,
+        .result-text.markdown-rendered ul,
+        .result-text.markdown-rendered ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .result-text-content.markdown-rendered li,
+        .result-text.markdown-rendered li {
+            margin: 4px 0;
+        }
+
+        .result-text-content.markdown-rendered code,
+        .result-text.markdown-rendered code {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--accent-color);
+        }
+
+        .result-text-content.markdown-rendered pre,
+        .result-text.markdown-rendered pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .result-text-content.markdown-rendered pre code,
+        .result-text.markdown-rendered pre code {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: var(--text-primary);
+            font-size: 0.85em;
+        }
+
+        .result-text-content.markdown-rendered blockquote,
+        .result-text.markdown-rendered blockquote {
+            border-left: 4px solid var(--accent-color);
+            padding-left: 16px;
+            margin: 12px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .result-text-content.markdown-rendered table,
+        .result-text.markdown-rendered table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 0.9em;
+        }
+
+        .result-text-content.markdown-rendered table th,
+        .result-text-content.markdown-rendered table td,
+        .result-text.markdown-rendered table th,
+        .result-text.markdown-rendered table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .result-text-content.markdown-rendered table th,
+        .result-text.markdown-rendered table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-text-content.markdown-rendered table tr:nth-child(even),
+        .result-text.markdown-rendered table tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        .result-text-content.markdown-rendered strong,
+        .result-text.markdown-rendered strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-text-content.markdown-rendered em,
+        .result-text.markdown-rendered em {
+            font-style: italic;
+        }
+
+        .result-text-content.markdown-rendered a,
+        .result-text.markdown-rendered a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .result-text-content.markdown-rendered a:hover,
+        .result-text.markdown-rendered a:hover {
+            text-decoration: underline;
+        }
+
+        .result-text-content.markdown-rendered hr,
+        .result-text.markdown-rendered hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 16px 0;
         }
 
         .result-text.fade {
@@ -1402,6 +1637,9 @@ limitations under the License.
 
     <!-- Lucide Icons - Load before body scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Markdown rendering libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
     <script>
         // Initialize Lucide icons immediately when DOM is ready
         if (document.readyState === 'loading') {
@@ -1798,26 +2036,37 @@ limitations under the License.
                             Model: <span id="modelName" style="font-weight: 600; color: var(--accent-color);">--</span>
                         </div>
                     </div>
-                    <div class="metrics-inline" id="metricsInline" style="display: none;">
-                        <div class="metric-item">
-                            <span>Latency:</span>
-                            <span class="metric-value" id="latencyValue">--</span>
-                            <span>ms</span>
-                        </div>
-                        <div class="metric-item">
-                            <span>Avg:</span>
-                            <span class="metric-value" id="avgLatencyValue">--</span>
-                            <span>ms</span>
-                        </div>
-                        <div class="metric-item">
-                            <span>Count:</span>
-                            <span class="metric-value" id="countValue">--</span>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="metrics-inline" id="metricsInline" style="display: none;">
+                            <div class="metric-item">
+                                <span>Latency:</span>
+                                <span class="metric-value" id="latencyValue">--</span>
+                                <span>ms</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Avg:</span>
+                                <span class="metric-value" id="avgLatencyValue">--</span>
+                                <span>ms</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Count:</span>
+                                <span class="metric-value" id="countValue">--</span>
+                            </div>
                         </div>
                     </div>
             </div>
 
                 <div class="result-prompt" id="currentPrompt"></div>
-                <div class="result-text" id="resultText"></div>
+                <div class="result-text" id="resultText">
+                    <button class="markdown-toggle-embedded" id="markdownToggle" title="Toggle Markdown Rendering">
+                        <span id="markdownIcon"><i data-lucide="code"></i></span>
+                        <span id="markdownText">Markdown</span>
+                    </button>
+                    <button class="copy-button-embedded" id="copyButton" title="Copy to clipboard">
+                        <i data-lucide="copy"></i>
+                    </button>
+                    <div class="result-text-content" id="resultTextContent"></div>
+                </div>
             </div>
 
             <!-- System Stats -->
@@ -1897,6 +2146,10 @@ limitations under the License.
         const resultText = document.getElementById('resultText');
         const currentPrompt = document.getElementById('currentPrompt');
         const metricsInline = document.getElementById('metricsInline');
+        const markdownToggle = document.getElementById('markdownToggle');
+        const markdownIcon = document.getElementById('markdownIcon');
+        const markdownText = document.getElementById('markdownText');
+        const copyButton = document.getElementById('copyButton');
         const latencyValue = document.getElementById('latencyValue');
         const avgLatencyValue = document.getElementById('avgLatencyValue');
         const countValue = document.getElementById('countValue');
@@ -1917,6 +2170,8 @@ limitations under the License.
         let isAnalysisRunning = false;
         let selectedCameraId = null;
         let rtspSessionId = 'default';  // For RTSP mode
+        // Enable markdown by default (user can disable if they prefer raw text)
+        let markdownEnabled = localStorage.getItem('markdownEnabled') !== 'false';
 
         // Enumerate and list available cameras
         async function enumerateCameras() {
@@ -2155,6 +2410,147 @@ limitations under the License.
                 });
             }
         });
+
+        // Markdown rendering function
+        function renderMarkdown(text) {
+            if (!text) return '';
+            // Check if libraries are loaded
+            if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+                console.warn('Markdown libraries not loaded, falling back to plain text');
+                return text;
+            }
+            try {
+                // Configure marked options
+                marked.setOptions({
+                    breaks: true,  // Convert line breaks to <br>
+                    gfm: true,     // GitHub Flavored Markdown
+                });
+                // Parse markdown and sanitize HTML
+                const html = marked.parse(text);
+                return DOMPurify.sanitize(html, {
+                    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'a'],
+                    ALLOWED_ATTR: ['href', 'title'],
+                });
+            } catch (e) {
+                console.error('Error rendering markdown:', e);
+                return text; // Fallback to plain text on error
+            }
+        }
+
+        // Update markdown toggle UI
+        function updateMarkdownToggleUI() {
+            const contentDiv = document.getElementById('resultTextContent');
+            if (markdownEnabled) {
+                markdownIcon.innerHTML = '<i data-lucide="code"></i>';
+                markdownText.textContent = 'Markdown';
+                if (contentDiv) {
+                    contentDiv.classList.add('markdown-rendered');
+                } else {
+                    resultText.classList.add('markdown-rendered');
+                }
+            } else {
+                markdownIcon.innerHTML = '<i data-lucide="file-text"></i>';
+                markdownText.textContent = 'Plain Text';
+                if (contentDiv) {
+                    contentDiv.classList.remove('markdown-rendered');
+                } else {
+                    resultText.classList.remove('markdown-rendered');
+                }
+            }
+            lucide.createIcons();
+        }
+
+        // Markdown toggle handler
+        markdownToggle.addEventListener('click', () => {
+            markdownEnabled = !markdownEnabled;
+            localStorage.setItem('markdownEnabled', markdownEnabled.toString());
+            updateMarkdownToggleUI();
+
+            // Re-render current text with new mode
+            if (lastText) {
+                updateResultText(lastText);
+            }
+        });
+
+        // Initialize markdown toggle state
+        updateMarkdownToggleUI();
+
+        // Copy to clipboard functionality
+        copyButton.addEventListener('click', async () => {
+            const contentDiv = document.getElementById('resultTextContent');
+            let textToCopy = '';
+
+            if (contentDiv) {
+                // If markdown is enabled, copy the raw text (not HTML)
+                if (markdownEnabled) {
+                    // Get the raw text by reading from lastText or extracting from content
+                    textToCopy = lastText || contentDiv.innerText || contentDiv.textContent;
+                } else {
+                    textToCopy = contentDiv.textContent || contentDiv.innerText;
+                }
+            } else {
+                textToCopy = resultText.textContent || resultText.innerText;
+            }
+
+            if (!textToCopy || textToCopy.trim() === '') {
+                return; // Nothing to copy
+            }
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+
+                // Visual feedback
+                const originalHTML = copyButton.innerHTML;
+
+                copyButton.classList.add('copied');
+                copyButton.innerHTML = '<i data-lucide="check"></i>';
+                lucide.createIcons();
+
+                // Reset after 0.8 seconds
+                setTimeout(() => {
+                    copyButton.classList.remove('copied');
+                    copyButton.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 800);
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    copyButton.classList.add('copied');
+                    setTimeout(() => copyButton.classList.remove('copied'), 500);
+                } catch (e) {
+                    console.error('Fallback copy failed:', e);
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+
+        // Function to update result text (handles both markdown and plain text)
+        function updateResultText(text) {
+            const contentDiv = document.getElementById('resultTextContent');
+            if (!contentDiv) {
+                // Fallback if content div doesn't exist yet
+                if (markdownEnabled) {
+                    resultText.innerHTML = renderMarkdown(text);
+                } else {
+                    resultText.textContent = text;
+                }
+                return;
+            }
+            // Update only the content div, preserving the button
+            if (markdownEnabled) {
+                contentDiv.innerHTML = renderMarkdown(text);
+            } else {
+                contentDiv.textContent = text;
+            }
+        }
 
         // Enumerate cameras on page load
         enumerateCameras();
@@ -3155,7 +3551,7 @@ limitations under the License.
                         }
                     }
 
-                    resultText.textContent = data.text;
+                    updateResultText(data.text);
                     lastText = data.text;
 
                     // Update video overlay (always, visibility is controlled by CSS)
@@ -3457,7 +3853,14 @@ limitations under the License.
                 testRtspBtn.disabled = false;
             }
 
-            resultText.textContent = '';
+            const contentDiv = document.getElementById('resultTextContent');
+            if (contentDiv) {
+                contentDiv.textContent = '';
+                contentDiv.innerHTML = '';
+            } else {
+                resultText.textContent = '';
+                resultText.innerHTML = '';
+            }
             resultText.classList.remove('fade');
             videoOverlay.textContent = '';
             lastText = '';
