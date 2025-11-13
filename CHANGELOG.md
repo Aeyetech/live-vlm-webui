@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2025-11-13
+
+### Fixed
+- **Version string fix**: Updated `__version__` in `__init__.py` to match package version
+  - The `live-vlm-webui --version` command now correctly displays 0.2.1
+  - This fixes an issue where v0.2.0 showed 0.1.1 in the version command
+
+---
+
 ## [0.2.0] - 2025-11-13
 
 **New Beta Feature: RTSP IP Camera Support + UI/UX Improvements**
