@@ -11,7 +11,7 @@ This document tracks active TODO items for upcoming releases.
 **Target Features:**
 - Docker version picker
 - RTSP streaming support (beta)
-- Honor OS dark/light mode preference
+- ✅ Honor OS dark/light mode preference (COMPLETED)
 - Display detailed VLM inference metrics
 - Small UI/UX improvements
 
@@ -66,19 +66,19 @@ This document tracks active TODO items for upcoming releases.
 
 ### UI/UX Improvements
 
-- [ ] **Honor OS dark/light mode preference** (HIGH PRIORITY)
-  - **Current state**: UI uses a fixed dark theme
-  - **Goal**: Automatically detect and respect OS-level dark/light mode preference
+- [x] **Honor OS dark/light mode preference** ✅ **COMPLETED**
   - **Implementation**:
-    - Use CSS `prefers-color-scheme` media query
-    - Detect system preference via JavaScript (`window.matchMedia`)
-    - Support dynamic theme switching when OS preference changes
-    - Optional: Add manual theme toggle override in settings
+    - ✅ Detect OS preference via JavaScript (`window.matchMedia('(prefers-color-scheme: light)')`)
+    - ✅ Auto-apply theme on page load based on OS preference
+    - ✅ Listen for OS preference changes and update dynamically
+    - ✅ Manual theme toggle cycles through: Auto → Light → Dark → Auto
+    - ✅ Only manual overrides (Light/Dark) saved to localStorage; Auto mode always checks OS preference
+    - ✅ Visual indicator shows current mode: Monitor icon for Auto, Sun for Light, Moon for Dark
   - **Benefits**:
     - Better UX for users with light mode preference
     - Respects accessibility settings
     - Modern web app best practice
-  - Effort: ~2-4 hours
+  - **Files modified**: `src/live_vlm_webui/static/index.html`
 
 - [ ] **Display detailed VLM inference metrics** (MEDIUM PRIORITY)
   - **Current state**: Only showing total latency (ms), avg latency, inference count
