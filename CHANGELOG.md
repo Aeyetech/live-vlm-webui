@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - 2025-11-13
 
-**New Beta Feature: RTSP IP Camera Support**
+**New Beta Feature: RTSP IP Camera Support + UI/UX Improvements**
 
 ### Added (Beta Features)
 
@@ -61,6 +61,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Testing without physical camera (FFmpeg, MediaMTX)
 - Updated README.md with Beta feature notice
 - Added tested hardware compatibility table
+
+### Added (UI/UX Improvements)
+
+#### 🎨 Theme Support
+- **OS Dark/Light Mode Preference**: Automatically detects and honors system theme preference
+  - Uses `prefers-color-scheme` media query detection
+  - Theme toggle cycles through: Auto → Light → Dark → Auto
+  - Manual overrides saved to localStorage
+  - Dynamic theme switching when OS preference changes
+  - Visual indicator shows current mode (Monitor icon for Auto, Sun for Light, Moon for Dark)
+
+#### 📝 Markdown Rendering
+- **Markdown Support in VLM Output**: Render formatted markdown responses from VLMs
+  - Toggle button in top-right corner of result balloon
+  - Supports headers, lists, code blocks, tables, blockquotes, links, bold, italic
+  - Markdown enabled by default for better readability
+  - HTML sanitization with DOMPurify for security
+  - Theme-aware styling for all markdown elements
+  - Button persists during streaming updates
+
+#### 📋 Copy to Clipboard
+- **Copy Button**: Transparent overlay button in lower-right corner of result balloon
+  - One-click copy of generation results
+  - Works with both markdown and plain text modes
+  - Visual feedback with checkmark animation
+  - Copies raw text (not HTML) for easy sharing
+
+### Changed
+- Improved warning color contrast (orange) for better readability on dark backgrounds
+- Added warning and error color variables for light theme consistency
 
 ### Future Enhancements (Post-Beta)
 - Multi-camera support (grid view)
