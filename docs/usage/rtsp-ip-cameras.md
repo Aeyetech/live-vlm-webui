@@ -1,9 +1,28 @@
 # RTSP IP Camera Support
 
 **Added in:** v0.2.0
-**Status:** Beta
+**Status:** 🧪 **Beta** - Limited Hardware Testing
+
+> [!WARNING]
+> **Beta Feature Notice**
+>
+> RTSP support has been tested with **limited hardware** and is currently in beta:
+> - ✅ **Tested and Working:** Reolink RLC-811A (1080p H.264)
+> - ❓ **Untested:** Other camera brands and models
+> - 🐛 **Community Help Needed:** Please test with your cameras and [report results](https://github.com/nvidia-ai-iot/live-vlm-webui/issues)!
+>
+> **We need your feedback** to expand the tested hardware list before marking this feature as stable.
 
 Live VLM WebUI now supports RTSP streams from IP cameras, enabling continuous monitoring and analysis of security cameras, baby monitors, and other network video sources.
+
+### Tested Hardware
+
+| Brand | Model | Resolution | Codec | Status | Notes |
+|-------|-------|------------|-------|--------|-------|
+| Reolink | RLC-811A | 1080p@30fps | H.264 | ✅ Working | Main stream tested |
+| *Your camera?* | *Model?* | - | - | ❓ Untested | [Help us test!](https://github.com/nvidia-ai-iot/live-vlm-webui/issues/new?template=rtsp-camera-report.md) |
+
+**Help us expand this list!** If you have a different camera brand, please test it and report your results.
 
 ---
 
