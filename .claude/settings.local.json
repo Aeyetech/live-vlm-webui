@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(docker images:*)",
+      "Bash(docker run:*)",
+      "Bash(ghcr.io/nvidia-ai-iot/live-vlm-webui:0.2.1-mac)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker logs:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

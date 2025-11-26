@@ -112,9 +112,9 @@ async def detect_local_service_and_model():
     Returns: (api_base, model_name) or (None, None) if no service found
     """
     services = [
-        ("http://localhost:11434/v1", "Ollama"),
-        ("http://localhost:8000/v1", "vLLM"),
-        ("http://localhost:30000/v1", "SGLang"),
+        ("http://127.0.0.1:11434/v1", "Ollama"),
+        ("http://127.0.0.1:8000/v1", "vLLM"),
+        ("http://127.0.0.1:30000/v1", "SGLang"),
     ]
 
     for api_base, service_name in services:
@@ -212,9 +212,9 @@ async def models(request):
 async def detect_services(request):
     """Detect available local VLM services"""
     services = [
-        {"name": "Ollama", "url": "http://localhost:11434/v1", "port": 11434, "path": "/api/tags"},
-        {"name": "vLLM", "url": "http://localhost:8000/v1", "port": 8000, "path": "/v1/models"},
-        {"name": "SGLang", "url": "http://localhost:30000/v1", "port": 30000, "path": "/v1/models"},
+        {"name": "Ollama", "url": "http://127.0.0.1:11434/v1", "port": 11434, "path": "/api/tags"},
+        {"name": "vLLM", "url": "http://127.0.0.1:8000/v1", "port": 8000, "path": "/v1/models"},
+        {"name": "SGLang", "url": "http://127.0.0.1:30000/v1", "port": 30000, "path": "/v1/models"},
     ]
 
     detected = []
@@ -224,7 +224,7 @@ async def detect_services(request):
         try:
             timeout = aiohttp.ClientTimeout(total=1.0)  # 1 second timeout
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                url = f"http://localhost:{service['port']}{service['path']}"
+                url = f"http://127.0.0.1:{service['port']}{service['path']}"
                 async with session.get(url) as response:
                     if response.status in [200, 404]:  # 404 is ok, means server is running
                         logger.info(f"Detected {service['name']} at {service['url']}")
